@@ -2,6 +2,7 @@ package dgrc
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -31,4 +32,35 @@ func (s *State) get(key string, v interface{}) (ok bool, err error) {
 func (s *State) del(keys ...string) (err error) {
 	res := s.client.Del(s.getContext(), keys...)
 	return res.Err()
+}
+
+func (s *State) list(key string, v interface{}) (err error) {
+	keys := s.client.Keys(s.getContext(), joinKeys(keyGuild, "*"))
+	if err = keys.Err(); err != nil {
+		return
+	}
+
+	res := s.client.MGet(s.getContext(), keys.Val()...)
+	if err = res.Err(); err != nil {
+		return
+	}
+
+	b := strings.Builder{}
+	b.WriteRune('[')
+
+	n := len(res.Val())
+	if n > 0 {
+		b.WriteString(res.Val()[0].(string))
+		if n > 1 {
+			for _, v := range res.Val()[1:] {
+				b.WriteRune(',')
+				b.WriteString(v.(string))
+			}
+		}
+	}
+
+	b.WriteRune(']')
+
+	err = json.Unmarshal([]byte(b.String()), v)
+	return
 }

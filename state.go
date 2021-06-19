@@ -67,21 +67,3 @@ func New(session *discordgo.Session, opts Options) (s *State) {
 
 	return
 }
-
-func (s *State) SetGuild(guild *discordgo.Guild) (err error) {
-	err = s.set(joinKeys(keyGuild, guild.ID), guild, s.getLifetime(guild))
-	return
-}
-
-func (s *State) Guild(id string) (v *discordgo.Guild, err error) {
-	v = &discordgo.Guild{}
-	ok, err := s.get(joinKeys(keyGuild, id), v)
-	if !ok {
-		if s.options.FetchAndStore {
-			v, err = s.session.Guild(id)
-		} else {
-			v = nil
-		}
-	}
-	return
-}

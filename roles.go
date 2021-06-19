@@ -15,6 +15,9 @@ func (s *State) Role(guildID, roleID string) (v *discordgo.Role, err error) {
 			var roles []*discordgo.Role
 			if roles, err = s.session.GuildRoles(guildID); roles != nil && err == nil {
 				for _, r := range roles {
+					if r.ID == roleID {
+						v = r
+					}
 					if err = s.SetRole(guildID, r); err != nil {
 						return
 					}

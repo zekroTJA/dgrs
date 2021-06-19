@@ -36,6 +36,11 @@ func (s *State) Guild(id string) (v *discordgo.Guild, err error) {
 				return
 			}
 		}
+		for _, e := range v.Emojis {
+			if err = s.SetEmoji(id, e); err != nil {
+				return
+			}
+		}
 	}
 
 	return

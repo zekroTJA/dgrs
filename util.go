@@ -56,11 +56,8 @@ func (s *State) getLifetime(v interface{}) (d time.Duration) {
 		d = lt.VoiceState
 	}
 
-	if d == 0 {
+	if d < 0 {
 		d = lt.General
-	}
-	if d == 0 {
-		d = DefaultGeneralLifetime
 	}
 
 	return

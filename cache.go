@@ -13,7 +13,7 @@ func (s *State) set(key string, v interface{}, lifetime time.Duration) (err erro
 	if err != nil {
 		return
 	}
-	res := s.client.SetEX(s.getContext(), key, data, lifetime)
+	res := s.client.Set(s.getContext(), key, data, lifetime)
 	return res.Err()
 }
 

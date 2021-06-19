@@ -22,7 +22,12 @@ func (s *State) Guild(id string) (v *discordgo.Guild, err error) {
 
 	if v != nil {
 		for _, m := range v.Members {
-			if err = s.SetMember(m); err != nil {
+			if err = s.SetMember(id, m); err != nil {
+				return
+			}
+		}
+		for _, r := range v.Roles {
+			if err = s.SetRole(id, r); err != nil {
 				return
 			}
 		}

@@ -1,10 +1,6 @@
 package dgrc
 
-import "time"
-
 const (
-	DefaultGeneralLifetime = 5 * time.Minute
-
 	keyPrefix     = "dgrc"
 	keyGuild      = "guild"
 	keyMember     = "member"

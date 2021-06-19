@@ -2,28 +2,33 @@ package dgrc
 
 import "github.com/bwmarrin/discordgo"
 
-func (s *State) SetMember(member *discordgo.Member) (err error) {
+func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) {
 	if member.User == nil {
 		err = ErrMemberUserNil
 		return
 	}
 
-	err = s.set(joinKeys(keyMember, member.GuildID, member.User.ID), member, s.getLifetime(member))
+	err = s.set(joinKeys(keyMember, guildID, member.User.ID), member, s.getLifetime(member))
 	return
 }
 
 func (s *State) Member(guildID, memberID string) (v *discordgo.Member, err error) {
 	v = &discordgo.Member{}
-	ok, err := s.get(joinKeys(keyGuild, guildID, memberID), v)
+	ok, err := s.get(joinKeys(keyUser, guildID, memberID), v)
 	if !ok {
 		if s.options.FetchAndStore {
 			if v, err = s.session.GuildMember(guildID, memberID); v != nil && err == nil {
-				err = s.SetMember(v)
+				err = s.SetMember(guildID, v)
 			}
 		} else {
 			v = nil
 		}
 	}
+
+	if v != nil && v.User != nil {
+		err = s.SetUser(v.User)
+	}
+
 	return
 }
 

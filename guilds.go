@@ -31,6 +31,11 @@ func (s *State) Guild(id string) (v *discordgo.Guild, err error) {
 				return
 			}
 		}
+		for _, c := range v.Channels {
+			if err = s.SetChannel(c); err != nil {
+				return
+			}
+		}
 	}
 
 	return

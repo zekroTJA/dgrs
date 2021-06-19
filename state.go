@@ -1,6 +1,7 @@
 package dgrc
 
 import (
+	"log"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -57,6 +58,7 @@ func New(session *discordgo.Session, opts Options) (s *State) {
 	s = &State{}
 
 	s.session = session
+
 	if opts.RedisClient != nil {
 		s.client = opts.RedisClient
 	} else {
@@ -64,6 +66,111 @@ func New(session *discordgo.Session, opts Options) (s *State) {
 	}
 
 	s.options = &opts
+
+	session.AddHandler(func(se *discordgo.Session, e interface{}) {
+		if err := s.onEvent(se, e); err != nil {
+			log.Println("State Error: ", err)
+		}
+	})
+
+	return
+}
+
+func (s *State) onEvent(se *discordgo.Session, _e interface{}) (err error) {
+	switch e := (_e).(type) {
+
+	case *discordgo.Ready:
+		for _, g := range e.Guilds {
+			if err = s.SetGuild(g); err != nil {
+				return
+			}
+			if err = s.SetSelfUser(e.User); err != nil {
+				return
+			}
+		}
+
+	case *discordgo.GuildCreate:
+		err = s.SetGuild(e.Guild)
+	case *discordgo.GuildUpdate:
+		err = s.SetGuild(e.Guild)
+	case *discordgo.GuildDelete:
+		err = s.RemoveGuild(e.Guild.ID)
+
+	case *discordgo.GuildMemberAdd:
+		err = s.SetMember(e.GuildID, e.Member)
+	case *discordgo.GuildMemberUpdate:
+		err = s.SetMember(e.GuildID, e.Member)
+	case *discordgo.GuildMembersChunk:
+		for _, m := range e.Members {
+			if err = s.SetMember(e.GuildID, m); err != nil {
+				return
+			}
+		}
+	case *discordgo.GuildMemberRemove:
+		if e.Member.User != nil {
+			err = s.RemoveMember(e.GuildID, e.Member.User.ID)
+		}
+
+	case *discordgo.GuildRoleCreate:
+		err = s.SetRole(e.GuildID, e.Role)
+	case *discordgo.GuildRoleUpdate:
+		err = s.SetRole(e.GuildID, e.Role)
+	case *discordgo.GuildRoleDelete:
+		err = s.RemoveRole(e.GuildID, e.RoleID)
+
+	case *discordgo.GuildEmojisUpdate:
+		for _, em := range e.Emojis {
+			if err = s.SetEmoji(e.GuildID, em); err != nil {
+				return
+			}
+		}
+
+	case *discordgo.ChannelCreate:
+		err = s.SetChannel(e.Channel)
+	case *discordgo.ChannelUpdate:
+		err = s.SetChannel(e.Channel)
+	case *discordgo.ChannelDelete:
+		err = s.RemoveChannel(e.Channel.ID)
+
+	case *discordgo.MessageCreate:
+		err = s.SetMessage(e.Message)
+	case *discordgo.MessageUpdate:
+		err = s.SetMessage(e.Message)
+	case *discordgo.MessageDelete:
+		err = s.RemoveMessage(e.ChannelID, e.Message.ID)
+	case *discordgo.MessageDeleteBulk:
+		for _, m := range e.Messages {
+			if err = s.RemoveMessage(e.ChannelID, m); err != nil {
+				return
+			}
+		}
+
+	case *discordgo.VoiceStateUpdate:
+		err = s.SetVoiceState(e.GuildID, e.VoiceState)
+
+	case *discordgo.PresenceUpdate:
+		if e.Status == discordgo.StatusOffline {
+			return
+		}
+		var m *discordgo.Member
+		m, err = s.Member(e.GuildID, e.User.ID, true)
+		if err != nil {
+			return
+		}
+		if m == nil {
+			// Member not found; this is a user changing state
+			m = &discordgo.Member{
+				GuildID: e.GuildID,
+				User:    e.User,
+			}
+		} else {
+			if e.User.Username != "" {
+				m.User.Username = e.User.Username
+			}
+		}
+
+		err = s.SetMember(e.GuildID, m)
+	}
 
 	return
 }

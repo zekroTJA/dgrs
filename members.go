@@ -12,11 +12,11 @@ func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) 
 	return
 }
 
-func (s *State) Member(guildID, memberID string) (v *discordgo.Member, err error) {
+func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *discordgo.Member, err error) {
 	v = &discordgo.Member{}
 	ok, err := s.get(joinKeys(keyUser, guildID, memberID), v)
 	if !ok {
-		if s.options.FetchAndStore {
+		if s.options.FetchAndStore && !(len(forceNoFetch) > 0 && forceNoFetch[0]) {
 			if v, err = s.session.GuildMember(guildID, memberID); v != nil && err == nil {
 				err = s.SetMember(guildID, v)
 			}

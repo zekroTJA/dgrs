@@ -31,3 +31,12 @@ func (s *State) Users() (v []*discordgo.User, err error) {
 func (s *State) RemoveUser(id string) (err error) {
 	return s.del(joinKeys(keyUser, id))
 }
+
+func (s *State) SelfUser() (v *discordgo.User, err error) {
+	return s.User("@me")
+}
+
+func (s *State) SetSelfUser(user *discordgo.User) (err error) {
+	err = s.set(joinKeys(keyUser, "@me"), user, s.getLifetime(user))
+	return
+}

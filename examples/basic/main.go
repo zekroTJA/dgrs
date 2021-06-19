@@ -21,12 +21,24 @@ func main() {
 		FetchAndStore: true,
 	})
 
+	dc.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
+		fmt.Println("Guilds:")
+		guilds, err := s.Guilds()
+		if err != nil {
+			fmt.Println("Err: ", err)
+			return
+		}
+		for _, g := range guilds {
+			fmt.Println(" -", g.Name)
+		}
+	})
+
 	fmt.Println(dc.Open())
 	defer dc.Close()
 
-	fmt.Println(s.Guild("526196711962705925"))
-	fmt.Println(s.Guilds())
-	fmt.Println(s.Member("526196711962705925", "221905671296253953"))
+	// fmt.Println(s.Guild("526196711962705925"))
+	// fmt.Println(s.Guilds())
+	// fmt.Println(s.Member("526196711962705925", "221905671296253953"))
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

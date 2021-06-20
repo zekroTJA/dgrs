@@ -1,6 +1,6 @@
 # dgrs  [![](https://godoc.org/github.com/zekrotja/dgrs?status.svg)](https://pkg.go.dev/github.com/zekrotja/dgrs)
 
-> This projects is in a very early state of development, so please use with caution. Most endpoints are currently not unit-tested and the general API may change during development.
+> This projects is in a very early state of development, so please use with caution. Most endpoints are currently not unit-tested and the general API may change during development. See the [ToDo](#todo) section to take a look into things that must be done until release.
 
 DiscordGo Redis State - or for short: dgrs *(pronounced: `daggers`)* - is a custom state manager for [DiscordGo](https://github.com/bwmarrin/discordgo) which uses a Redis Instance to store and sync state.
 
@@ -40,3 +40,14 @@ for _, g := range guilds {
     fmt.Println(g.Name)
 }
 ```
+
+# ToDo
+
+- [ ] Add more unit tests
+- [ ] Add custom marshal/unmarshal function option
+- [ ] Optimize state updating
+
+---
+
+© 2021 Ringo Hoffmann (zekro Development).  
+Covered by the MIT License.

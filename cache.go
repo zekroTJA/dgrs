@@ -43,7 +43,7 @@ func (s *State) del(keys ...string) (err error) {
 func (s *State) list(key string, v interface{}) (err error) {
 	ctx, cf := s.getContext()
 	defer cf()
-	keys := s.client.Keys(ctx, joinKeys(keyGuild, "*"))
+	keys := s.client.Keys(ctx, key)
 	if err = keys.Err(); err != nil {
 		return
 	}
@@ -78,4 +78,18 @@ func (s *State) list(key string, v interface{}) (err error) {
 
 	err = json.Unmarshal([]byte(b.String()), v)
 	return
+}
+
+func (s *State) flush(key string) (err error) {
+	ctx, cfk := s.getContext()
+	defer cfk()
+	keys := s.client.Keys(ctx, key)
+	if err = keys.Err(); err != nil || len(keys.Val()) == 0 {
+		return
+	}
+
+	ctx, cfd := s.getContext()
+	defer cfd()
+	res := s.client.Del(ctx, keys.Val()...)
+	return res.Err()
 }

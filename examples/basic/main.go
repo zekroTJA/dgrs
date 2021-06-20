@@ -17,12 +17,17 @@ func main() {
 
 	dc, _ := discordgo.New("Bot " + os.Getenv("DISCORD_TOKEN"))
 
-	s := dgrc.New(dc, dgrc.Options{
+	s, err := dgrc.New(dc, dgrc.Options{
 		RedisOptions: redis.Options{
 			Addr: "localhost:6379",
 		},
-		FetchAndStore: true,
+		FetchAndStore:  true,
+		FlushOnStartup: true,
 	})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	dc.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
 		fmt.Println("Guilds:")

@@ -22,6 +22,10 @@ type Options struct {
 	// and store them in the cache.
 	FetchAndStore bool
 
+	// If set, all cache entries created by dgrc will be
+	// flushed on initialization.
+	FlushOnStartup bool
+
 	// You can specify a timeout period for redis commands.
 	// If not set, no timeout will be used.
 	CommandTimeout time.Duration
@@ -54,7 +58,7 @@ type State struct {
 	session *discordgo.Session
 }
 
-func New(session *discordgo.Session, opts Options) (s *State) {
+func New(session *discordgo.Session, opts Options) (s *State, err error) {
 	s = &State{}
 
 	s.session = session
@@ -67,6 +71,10 @@ func New(session *discordgo.Session, opts Options) (s *State) {
 
 	s.options = &opts
 
+	if opts.FlushOnStartup {
+		err = s.Flush()
+	}
+
 	session.AddHandler(func(se *discordgo.Session, e interface{}) {
 		if err := s.onEvent(se, e); err != nil {
 			log.Println("State Error: ", err)
@@ -74,6 +82,11 @@ func New(session *discordgo.Session, opts Options) (s *State) {
 	})
 
 	return
+}
+
+func (s *State) Flush(subKeys ...string) (err error) {
+	subKeys = append(subKeys, "*")
+	return s.flush(joinKeys(subKeys...))
 }
 
 func (s *State) onEvent(se *discordgo.Session, _e interface{}) (err error) {

@@ -40,19 +40,24 @@ func (s *State) list(key string, v interface{}) (err error) {
 		return
 	}
 
-	res := s.client.MGet(s.getContext(), keys.Val()...)
-	if err = res.Err(); err != nil {
-		return
+	var vals []interface{}
+
+	if len(keys.Val()) > 0 {
+		res := s.client.MGet(s.getContext(), keys.Val()...)
+		if err = res.Err(); err != nil {
+			return
+		}
+		vals = res.Val()
 	}
 
 	b := strings.Builder{}
 	b.WriteRune('[')
 
-	n := len(res.Val())
+	n := len(vals)
 	if n > 0 {
-		b.WriteString(res.Val()[0].(string))
+		b.WriteString(vals[0].(string))
 		if n > 1 {
-			for _, v := range res.Val()[1:] {
+			for _, v := range vals[1:] {
 				b.WriteRune(',')
 				b.WriteString(v.(string))
 			}

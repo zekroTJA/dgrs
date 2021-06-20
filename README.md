@@ -46,6 +46,7 @@ for _, g := range guilds {
 - [ ] Add more unit tests
 - [ ] Add custom marshal/unmarshal function option
 - [ ] Optimize state updating
+- [ ] Optimize code documentation
 
 ---
 

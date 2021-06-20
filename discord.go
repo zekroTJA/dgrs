@@ -7,6 +7,7 @@ import "github.com/bwmarrin/discordgo"
 type DiscordSession interface {
 	AddHandler(interface{}) func()
 	Channel(channelID string) (*discordgo.Channel, error)
+	GuildChannels(guildID string) ([]*discordgo.Channel, error)
 	GuildEmojis(guildID string) ([]*discordgo.Emoji, error)
 	Guild(guildID string) (*discordgo.Guild, error)
 	GuildMember(guildID, memberID string) (*discordgo.Member, error)

@@ -97,6 +97,29 @@ func (_m *DiscordSession) Guild(guildID string) (*discordgo.Guild, error) {
 	return r0, r1
 }
 
+// GuildChannels provides a mock function with given fields: guildID
+func (_m *DiscordSession) GuildChannels(guildID string) ([]*discordgo.Channel, error) {
+	ret := _m.Called(guildID)
+
+	var r0 []*discordgo.Channel
+	if rf, ok := ret.Get(0).(func(string) []*discordgo.Channel); ok {
+		r0 = rf(guildID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*discordgo.Channel)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(guildID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GuildEmojis provides a mock function with given fields: guildID
 func (_m *DiscordSession) GuildEmojis(guildID string) ([]*discordgo.Emoji, error) {
 	ret := _m.Called(guildID)

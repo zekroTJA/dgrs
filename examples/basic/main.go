@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
@@ -11,6 +13,40 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/zekrotja/dgrs"
 )
+
+var cmds = map[string]func(s *discordgo.Session, e *discordgo.MessageCreate, state *dgrs.State){
+	"info": func(s *discordgo.Session, e *discordgo.MessageCreate, state *dgrs.State) {
+		guild, err := state.Guild(e.GuildID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		channel, err := state.Channel(e.ChannelID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		member, err := state.Member(e.GuildID, e.Author.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Guild: %+v\n", guild)
+		log.Printf("Channel: %+v\n", channel)
+		log.Printf("Member: %+v\n", member)
+	},
+
+	"channels": func(s *discordgo.Session, e *discordgo.MessageCreate, state *dgrs.State) {
+		chans, err := state.Channels(e.GuildID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, c := range chans {
+			fmt.Println(c.Name)
+		}
+	},
+}
 
 func main() {
 	godotenv.Load()
@@ -33,29 +69,14 @@ func main() {
 		log.Printf("Logged in as %s", e.User.String())
 	})
 
-	session.AddHandler(func(_ *discordgo.Session, e *discordgo.MessageCreate) {
-		if e.Author.Bot || e.Content != "info" {
+	session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) {
+		if e.Author.Bot {
 			return
 		}
 
-		guild, err := state.Guild(e.GuildID)
-		if err != nil {
-			log.Fatal(err)
+		if cmd, ok := cmds[strings.ToLower(e.Content)]; ok {
+			cmd(s, e, state)
 		}
-
-		channel, err := state.Channel(e.ChannelID)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		member, err := state.Member(e.GuildID, e.Author.ID)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("Guild: %+v\n", guild)
-		log.Printf("Channel: %+v\n", channel)
-		log.Printf("Member: %+v\n", member)
 	})
 
 	err = session.Open()

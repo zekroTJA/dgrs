@@ -45,6 +45,17 @@ func (s *State) Channels(guildID string) (v []*discordgo.Channel, err error) {
 			}
 		}
 		v = vg
+
+		if len(v) == 0 {
+			if v, err = s.session.GuildChannels(guildID); err != nil {
+				return
+			}
+			for _, c := range v {
+				if err = s.SetChannel(c); err != nil {
+					return
+				}
+			}
+		}
 	}
 
 	return

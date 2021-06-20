@@ -13,12 +13,16 @@ func (s *State) set(key string, v interface{}, lifetime time.Duration) (err erro
 	if err != nil {
 		return
 	}
-	res := s.client.Set(s.getContext(), key, data, lifetime)
+	ctx, cf := s.getContext()
+	defer cf()
+	res := s.client.Set(ctx, key, data, lifetime)
 	return res.Err()
 }
 
 func (s *State) get(key string, v interface{}) (ok bool, err error) {
-	res := s.client.Get(s.getContext(), key)
+	ctx, cf := s.getContext()
+	defer cf()
+	res := s.client.Get(ctx, key)
 	data, err := res.Bytes()
 	if err == redis.Nil {
 		err = nil
@@ -30,12 +34,16 @@ func (s *State) get(key string, v interface{}) (ok bool, err error) {
 }
 
 func (s *State) del(keys ...string) (err error) {
-	res := s.client.Del(s.getContext(), keys...)
+	ctx, cf := s.getContext()
+	defer cf()
+	res := s.client.Del(ctx, keys...)
 	return res.Err()
 }
 
 func (s *State) list(key string, v interface{}) (err error) {
-	keys := s.client.Keys(s.getContext(), joinKeys(keyGuild, "*"))
+	ctx, cf := s.getContext()
+	defer cf()
+	keys := s.client.Keys(ctx, joinKeys(keyGuild, "*"))
 	if err = keys.Err(); err != nil {
 		return
 	}
@@ -43,7 +51,9 @@ func (s *State) list(key string, v interface{}) (err error) {
 	var vals []interface{}
 
 	if len(keys.Val()) > 0 {
-		res := s.client.MGet(s.getContext(), keys.Val()...)
+		ctx, cf := s.getContext()
+		defer cf()
+		res := s.client.MGet(ctx, keys.Val()...)
 		if err = res.Err(); err != nil {
 			return
 		}

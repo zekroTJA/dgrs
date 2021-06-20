@@ -25,10 +25,11 @@ func joinKeys(keys ...string) string {
 	return b.String()
 }
 
-func (s *State) getContext() (ctx context.Context) {
+func (s *State) getContext() (ctx context.Context, cf context.CancelFunc) {
 	if s.options.CommandTimeout > 0 {
-		ctx, _ = context.WithTimeout(context.Background(), s.options.CommandTimeout)
+		ctx, cf = context.WithTimeout(context.Background(), s.options.CommandTimeout)
 	} else {
+		cf = func() {}
 		ctx = context.Background()
 	}
 	return

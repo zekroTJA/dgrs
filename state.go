@@ -12,7 +12,7 @@ import (
 type Options struct {
 	// You can pass a pre-initialized redis instance
 	// if you already have one.
-	RedisClient *redis.Client
+	RedisClient redis.Cmdable
 
 	// Redis client options to connect to a redis
 	// instance.
@@ -49,8 +49,8 @@ type Lifetimes struct {
 }
 
 type State struct {
+	client  redis.Cmdable
 	options *Options
-	client  *redis.Client
 	session *discordgo.Session
 }
 

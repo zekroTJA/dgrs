@@ -17,7 +17,8 @@ func main() {
 
 	dc, _ := discordgo.New("Bot " + os.Getenv("DISCORD_TOKEN"))
 
-	s, err := dgrc.New(dc, dgrc.Options{
+	s, err := dgrc.New(dgrc.Options{
+		DiscordSession: dc,
 		RedisOptions: redis.Options{
 			Addr: "localhost:6379",
 		},

@@ -2,6 +2,7 @@ package dgrc
 
 import "github.com/bwmarrin/discordgo"
 
+// SetMember sets the given member object to the cache.
 func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) {
 	if member.User == nil {
 		err = ErrMemberUserNil
@@ -12,6 +13,14 @@ func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) 
 	return
 }
 
+// Member tries to retrieve a member by the given guild and member ID.
+//
+// If no member was found and FetchAndStore is enabled, the object
+// will be tried to be retrieved from the API. When this was successful,
+// it is stored in the cache and the object is returned.
+//
+// Otherwise, if the object was not found in the cache and FetchAndStore
+// is disabled, nil is returned.
 func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *discordgo.Member, err error) {
 	v = &discordgo.Member{}
 	ok, err := s.get(joinKeys(keyUser, guildID, memberID), v)
@@ -32,12 +41,16 @@ func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *disco
 	return
 }
 
+// Members returns a list of members of the given guild ID
+// which are stored in the cache at the given moment.
 func (s *State) Members(guildID string) (v []*discordgo.Member, err error) {
 	v = make([]*discordgo.Member, 0)
 	err = s.list(joinKeys(keyMember, guildID, "*"), &v)
 	return
 }
 
+// RemoveMember removes a member object from the cache by
+// the given guild and member ID.
 func (s *State) RemoveMember(guildID, memberID string) (err error) {
 	return s.del(joinKeys(keyMember, guildID, memberID))
 }

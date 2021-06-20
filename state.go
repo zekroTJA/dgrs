@@ -14,6 +14,8 @@ type Options struct {
 	// if you already have one.
 	RedisClient redis.Cmdable
 
+	DiscordSession *discordgo.Session
+
 	// Redis client options to connect to a redis
 	// instance.
 	RedisOptions redis.Options
@@ -40,6 +42,8 @@ type Options struct {
 	Lifetimes Lifetimes
 }
 
+// Lifetimes wrap a grid of lifetime specifications
+// for each cache object.
 type Lifetimes struct {
 	General,
 	Guild,
@@ -52,16 +56,27 @@ type Lifetimes struct {
 	VoiceState time.Duration
 }
 
+// State utilizes a redis connection to be able to store and retrieve
+// discordgo state objects.
+//
+// Also, because state hooks event handlers into the passed discord
+// session, it is also possible to maintain the current state
+// automatically.
 type State struct {
 	client  redis.Cmdable
 	options *Options
 	session *discordgo.Session
 }
 
-func New(session *discordgo.Session, opts Options) (s *State, err error) {
+func New(opts Options) (s *State, err error) {
 	s = &State{}
 
-	s.session = session
+	s.session = opts.DiscordSession
+
+	if opts.FetchAndStore && s.session == nil {
+		err = ErrSessionNotProvided
+		return
+	}
 
 	if opts.RedisClient != nil {
 		s.client = opts.RedisClient
@@ -75,11 +90,13 @@ func New(session *discordgo.Session, opts Options) (s *State, err error) {
 		err = s.Flush()
 	}
 
-	session.AddHandler(func(se *discordgo.Session, e interface{}) {
-		if err := s.onEvent(se, e); err != nil {
-			log.Println("State Error: ", err)
-		}
-	})
+	if s.session != nil {
+		s.session.AddHandler(func(se *discordgo.Session, e interface{}) {
+			if err := s.onEvent(se, e); err != nil {
+				log.Println("State Error: ", err)
+			}
+		})
+	}
 
 	return
 }

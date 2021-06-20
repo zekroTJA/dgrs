@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
-	"github.com/zekrotja/dgrc"
+	"github.com/zekrotja/dgrs"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 
 	session, _ := discordgo.New("Bot " + os.Getenv("DISCORD_TOKEN"))
 
-	state, err := dgrc.New(dgrc.Options{
+	state, err := dgrs.New(dgrs.Options{
 		DiscordSession: session,
 		RedisOptions: redis.Options{
 			Addr: "localhost:6379",

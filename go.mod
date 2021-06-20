@@ -1,4 +1,4 @@
-module github.com/zekrotja/dgrc
+module github.com/zekrotja/dgrs
 
 go 1.16
 

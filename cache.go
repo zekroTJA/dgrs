@@ -1,4 +1,4 @@
-package dgrc
+package dgrs
 
 import (
 	"encoding/json"

@@ -1,7 +1,7 @@
-package dgrc
+package dgrs
 
 const (
-	keyPrefix     = "dgrc"
+	keyPrefix     = "dgrs"
 	KeyGuild      = "guild"
 	KeyMember     = "member"
 	KeyUser       = "user"

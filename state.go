@@ -1,4 +1,4 @@
-package dgrc
+package dgrs
 
 import (
 	"log"
@@ -24,7 +24,7 @@ type Options struct {
 	// and store them in the cache.
 	FetchAndStore bool
 
-	// If set, all cache entries created by dgrc will be
+	// If set, all cache entries created by dgrs will be
 	// flushed on initialization.
 	FlushOnStartup bool
 
@@ -103,7 +103,7 @@ func New(opts Options) (s *State, err error) {
 	return
 }
 
-// Flush deletes all keys in the cache stored by dgrc.
+// Flush deletes all keys in the cache stored by dgrs.
 //
 // You can also specify sub keys like KeyGuild to only remove
 // all guild entries, for example.

@@ -1,4 +1,4 @@
-package dgrc
+package dgrs
 
 import "github.com/bwmarrin/discordgo"
 
@@ -31,7 +31,7 @@ func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *disco
 	v = &discordgo.Member{}
 	ok, err := s.get(joinKeys(KeyUser, guildID, memberID), v)
 	if !ok {
-		if s.options.FetchAndStore && !(len(forceNoFetch) > 0 && forceNoFetch[0]) {
+		if s.options.FetchAndStore && !optBool(forceNoFetch) {
 			if v, err = s.session.GuildMember(guildID, memberID); v != nil && err == nil {
 				err = s.SetMember(guildID, v)
 			}

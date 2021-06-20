@@ -1,4 +1,4 @@
-package dgrc
+package dgrs
 
 import "github.com/bwmarrin/discordgo"
 
@@ -45,7 +45,11 @@ func (s *State) SetGuild(guild *discordgo.Guild) (err error) {
 //
 // Otherwise, if the object was not found in the cache and FetchAndStore
 // is disabled, nil is returned.
-func (s *State) Guild(id string) (v *discordgo.Guild, err error) {
+//
+// Optionally, when hydrate is set to true, members, roles,
+// channels and emojis will also be obtained from cache and
+// added to the guild object.
+func (s *State) Guild(id string, hydrate ...bool) (v *discordgo.Guild, err error) {
 	v = &discordgo.Guild{}
 	ok, err := s.get(joinKeys(KeyGuild, id), v)
 	if !ok {
@@ -55,6 +59,21 @@ func (s *State) Guild(id string) (v *discordgo.Guild, err error) {
 			}
 		} else {
 			v = nil
+		}
+	}
+
+	if v != nil && optBool(hydrate) {
+		if v.Members, err = s.Members(id); err != nil {
+			return
+		}
+		if v.Roles, err = s.Roles(id); err != nil {
+			return
+		}
+		if v.Channels, err = s.Channels(id); err != nil {
+			return
+		}
+		if v.Emojis, err = s.Emojis(id); err != nil {
+			return
 		}
 	}
 

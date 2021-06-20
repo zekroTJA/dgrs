@@ -1,4 +1,4 @@
-package dgrc
+package dgrs
 
 import (
 	"context"
@@ -62,4 +62,8 @@ func (s *State) getLifetime(v interface{}) (d time.Duration) {
 	}
 
 	return
+}
+
+func optBool(v []bool) bool {
+	return len(v) != 0 && v[0]
 }

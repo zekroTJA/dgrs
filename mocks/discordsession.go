@@ -166,6 +166,29 @@ func (_m *DiscordSession) GuildMember(guildID string, memberID string) (*discord
 	return r0, r1
 }
 
+// GuildMembers provides a mock function with given fields: guildID, after, limit
+func (_m *DiscordSession) GuildMembers(guildID string, after string, limit int) ([]*discordgo.Member, error) {
+	ret := _m.Called(guildID, after, limit)
+
+	var r0 []*discordgo.Member
+	if rf, ok := ret.Get(0).(func(string, string, int) []*discordgo.Member); ok {
+		r0 = rf(guildID, after, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*discordgo.Member)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, string, int) error); ok {
+		r1 = rf(guildID, after, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GuildRoles provides a mock function with given fields: guildID
 func (_m *DiscordSession) GuildRoles(guildID string) ([]*discordgo.Role, error) {
 	ret := _m.Called(guildID)

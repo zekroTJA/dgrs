@@ -39,13 +39,13 @@ func (s *State) Emoji(guildID, emojiID string) (v *discordgo.Emoji, err error) {
 
 // Emojis returns a list of emojis of the given guild ID
 // which are stored in the cache at the given moment.
-func (s *State) Emojis(guildID string) (v []*discordgo.Emoji, err error) {
+func (s *State) Emojis(guildID string, forceFetch ...bool) (v []*discordgo.Emoji, err error) {
 	v = make([]*discordgo.Emoji, 0)
 	if err = s.list(joinKeys(KeyEmoji, guildID, "*"), &v); err != nil {
 		return
 	}
 
-	if len(v) == 0 {
+	if (len(v) == 0 || optBool(forceFetch)) && s.options.FetchAndStore {
 		v, err = s.fetchEmojis(guildID)
 	}
 

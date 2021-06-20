@@ -33,7 +33,7 @@ func (s *State) Channel(id string) (v *discordgo.Channel, err error) {
 
 // Channels returns a list of channels of the given guild ID
 // which are stored in the cache at the given moment.
-func (s *State) Channels(guildID string) (v []*discordgo.Channel, err error) {
+func (s *State) Channels(guildID string, forceFetch ...bool) (v []*discordgo.Channel, err error) {
 	v = make([]*discordgo.Channel, 0)
 	if err = s.list(joinKeys(KeyChannel, "*"), &v); err != nil {
 		return
@@ -48,7 +48,7 @@ func (s *State) Channels(guildID string) (v []*discordgo.Channel, err error) {
 		}
 		v = vg
 
-		if len(v) == 0 {
+		if (len(v) == 0 || optBool(forceFetch)) && s.options.FetchAndStore {
 			if v, err = s.session.GuildChannels(guildID); err != nil {
 				return
 			}

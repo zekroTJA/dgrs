@@ -1,6 +1,8 @@
 package dgrs
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/bwmarrin/discordgo"
+)
 
 // SetMember sets the given member object to the cache.
 func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) {
@@ -45,9 +47,31 @@ func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *disco
 
 // Members returns a list of members of the given guild ID
 // which are stored in the cache at the given moment.
-func (s *State) Members(guildID string) (v []*discordgo.Member, err error) {
+func (s *State) Members(guildID string, forceFetch ...bool) (v []*discordgo.Member, err error) {
 	v = make([]*discordgo.Member, 0)
-	err = s.list(joinKeys(KeyMember, guildID, "*"), &v)
+	if err = s.list(joinKeys(KeyMember, guildID, "*"), &v); err != nil {
+		return
+	}
+
+	if (len(v) == 0 || optBool(forceFetch)) && s.options.FetchAndStore {
+		var last string
+		var ms []*discordgo.Member
+		for ms == nil || len(ms) > 0 {
+			if ms != nil {
+				last = ms[len(ms)-1].User.ID
+			}
+			if ms, err = s.session.GuildMembers(guildID, last, 100); err != nil {
+				return
+			}
+			v = append(v, ms...)
+			for _, m := range ms {
+				if err = s.SetMember(guildID, m); err != nil {
+					return
+				}
+			}
+		}
+	}
+
 	return
 }
 

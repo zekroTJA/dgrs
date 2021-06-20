@@ -2,14 +2,14 @@ package dgrc
 
 const (
 	keyPrefix     = "dgrc"
-	keyGuild      = "guild"
-	keyMember     = "member"
-	keyUser       = "user"
-	keyRole       = "role"
-	keyChannel    = "chan"
-	keyEmoji      = "emoji"
-	keyMessage    = "message"
-	keyVoiceState = "vs"
+	KeyGuild      = "guild"
+	KeyMember     = "member"
+	KeyUser       = "user"
+	KeyRole       = "role"
+	KeyChannel    = "chan"
+	KeyEmoji      = "emoji"
+	KeyMessage    = "message"
+	KeyVoiceState = "vs"
 
 	keySeperator = ':'
 )

@@ -4,7 +4,7 @@ import "github.com/bwmarrin/discordgo"
 
 // SetRole sets the given role object to the cache.
 func (s *State) SetRole(guildID string, role *discordgo.Role) (err error) {
-	err = s.set(joinKeys(keyRole, guildID, role.ID), role, s.getLifetime(role))
+	err = s.set(joinKeys(KeyRole, guildID, role.ID), role, s.getLifetime(role))
 	return
 }
 
@@ -18,7 +18,7 @@ func (s *State) SetRole(guildID string, role *discordgo.Role) (err error) {
 // is disabled, nil is returned.
 func (s *State) Role(guildID, roleID string) (v *discordgo.Role, err error) {
 	v = &discordgo.Role{}
-	ok, err := s.get(joinKeys(keyRole, guildID, roleID), v)
+	ok, err := s.get(joinKeys(KeyRole, guildID, roleID), v)
 	if !ok {
 		if s.options.FetchAndStore {
 			var roles []*discordgo.Role
@@ -43,11 +43,11 @@ func (s *State) Role(guildID, roleID string) (v *discordgo.Role, err error) {
 // in the cache at the given moment on the given guild.
 func (s *State) Roles(guildID string) (v []*discordgo.Role, err error) {
 	v = make([]*discordgo.Role, 0)
-	err = s.list(joinKeys(keyRole, guildID, "*"), &v)
+	err = s.list(joinKeys(KeyRole, guildID, "*"), &v)
 	return
 }
 
 // RemoveRole removes a role object from the cache by the given ID.
 func (s *State) RemoveRole(guildID, roleID string) (err error) {
-	return s.del(joinKeys(keyRole, guildID, roleID))
+	return s.del(joinKeys(KeyRole, guildID, roleID))
 }

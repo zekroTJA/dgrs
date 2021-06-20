@@ -4,7 +4,7 @@ import "github.com/bwmarrin/discordgo"
 
 // SetMessage sets the given message object to the cache.
 func (s *State) SetMessage(message *discordgo.Message) (err error) {
-	err = s.set(joinKeys(keyMessage, message.ChannelID, message.ID), message, s.getLifetime(message))
+	err = s.set(joinKeys(KeyMessage, message.ChannelID, message.ID), message, s.getLifetime(message))
 	return
 }
 
@@ -18,7 +18,7 @@ func (s *State) SetMessage(message *discordgo.Message) (err error) {
 // is disabled, nil is returned.
 func (s *State) Message(channelID, messageID string) (v *discordgo.Message, err error) {
 	v = &discordgo.Message{}
-	ok, err := s.get(joinKeys(keyMessage, channelID, messageID), v)
+	ok, err := s.get(joinKeys(KeyMessage, channelID, messageID), v)
 	if !ok {
 		if s.options.FetchAndStore {
 			if v, err = s.session.ChannelMessage(channelID, messageID); v != nil && err == nil {
@@ -35,12 +35,12 @@ func (s *State) Message(channelID, messageID string) (v *discordgo.Message, err 
 // which are stored in the cache at the given moment.
 func (s *State) Messages(channelID string) (v []*discordgo.Message, err error) {
 	v = make([]*discordgo.Message, 0)
-	err = s.list(joinKeys(keyMessage, channelID, "*"), &v)
+	err = s.list(joinKeys(KeyMessage, channelID, "*"), &v)
 	return
 }
 
 // RemoveMessage removes a message object from the cache by
 // the given channel and message ID.
 func (s *State) RemoveMessage(channelID, messageID string) (err error) {
-	return s.del(joinKeys(keyMessage, channelID, messageID))
+	return s.del(joinKeys(KeyMessage, channelID, messageID))
 }

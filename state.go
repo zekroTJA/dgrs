@@ -68,6 +68,8 @@ type State struct {
 	session *discordgo.Session
 }
 
+// New returns a new State instance with the passed
+// options.
 func New(opts Options) (s *State, err error) {
 	s = &State{}
 
@@ -101,6 +103,10 @@ func New(opts Options) (s *State, err error) {
 	return
 }
 
+// Flush deletes all keys in the cache stored by dgrc.
+//
+// You can also specify sub keys like KeyGuild to only remove
+// all guild entries, for example.
 func (s *State) Flush(subKeys ...string) (err error) {
 	subKeys = append(subKeys, "*")
 	return s.flush(joinKeys(subKeys...))

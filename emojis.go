@@ -22,15 +22,13 @@ func (s *State) Emoji(guildID, emojiID string) (v *discordgo.Emoji, err error) {
 	if !ok {
 		if s.options.FetchAndStore {
 			var emojis []*discordgo.Emoji
-			if emojis, err = s.session.GuildEmojis(guildID); emojis != nil && err == nil {
-				for _, e := range emojis {
-					if e.ID == emojiID {
-						v = e
-					}
-					if err = s.SetEmoji(guildID, e); err != nil {
-						return
+			if emojis, err = s.fetchEmojis(guildID); err == nil {
+				for _, v = range emojis {
+					if v.ID == emojiID {
+						break
 					}
 				}
+				return
 			}
 		} else {
 			v = nil
@@ -43,11 +41,29 @@ func (s *State) Emoji(guildID, emojiID string) (v *discordgo.Emoji, err error) {
 // which are stored in the cache at the given moment.
 func (s *State) Emojis(guildID string) (v []*discordgo.Emoji, err error) {
 	v = make([]*discordgo.Emoji, 0)
-	err = s.list(joinKeys(KeyEmoji, guildID, "*"), &v)
+	if err = s.list(joinKeys(KeyEmoji, guildID, "*"), &v); err != nil {
+		return
+	}
+
+	if len(v) == 0 {
+		v, err = s.fetchEmojis(guildID)
+	}
+
 	return
 }
 
 // RemoveEmoji removes an emoji object from the cache by the given ID.
 func (s *State) RemoveEmoji(guildID, emojiID string) (err error) {
 	return s.del(joinKeys(KeyEmoji, guildID, emojiID))
+}
+
+func (s *State) fetchEmojis(guildID string) (v []*discordgo.Emoji, err error) {
+	if v, err = s.session.GuildEmojis(guildID); v != nil && err == nil {
+		for _, e := range v {
+			if err = s.SetEmoji(guildID, e); err != nil {
+				return
+			}
+		}
+	}
+	return
 }

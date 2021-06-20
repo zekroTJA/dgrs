@@ -35,7 +35,9 @@ func (s *State) Channel(id string) (v *discordgo.Channel, err error) {
 // which are stored in the cache at the given moment.
 func (s *State) Channels(guildID string) (v []*discordgo.Channel, err error) {
 	v = make([]*discordgo.Channel, 0)
-	err = s.list(joinKeys(KeyChannel, "*"), &v)
+	if err = s.list(joinKeys(KeyChannel, "*"), &v); err != nil {
+		return
+	}
 
 	vg := make([]*discordgo.Channel, 0)
 	if guildID != "" {

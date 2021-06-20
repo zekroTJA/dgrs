@@ -14,7 +14,9 @@ type Options struct {
 	// if you already have one.
 	RedisClient redis.Cmdable
 
-	DiscordSession *discordgo.Session
+	// Discord session used to fetch unpresent data
+	// and to hook event handlers into.
+	DiscordSession DiscordSession
 
 	// Redis client options to connect to a redis
 	// instance.
@@ -64,8 +66,8 @@ type Lifetimes struct {
 // automatically.
 type State struct {
 	client  redis.Cmdable
+	session DiscordSession
 	options *Options
-	session *discordgo.Session
 }
 
 // New returns a new State instance with the passed

@@ -10,6 +10,12 @@ func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) 
 	}
 
 	err = s.set(joinKeys(KeyMember, guildID, member.User.ID), member, s.getLifetime(member))
+	if err != nil {
+		return
+	}
+
+	err = s.SetUser(member.User)
+
 	return
 }
 
@@ -32,10 +38,6 @@ func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *disco
 		} else {
 			v = nil
 		}
-	}
-
-	if v != nil && v.User != nil {
-		err = s.SetUser(v.User)
 	}
 
 	return

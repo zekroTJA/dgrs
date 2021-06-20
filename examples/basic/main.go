@@ -8,11 +8,14 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-redis/redis/v8"
+	"github.com/joho/godotenv"
 	"github.com/zekrotja/dgrc"
 )
 
 func main() {
-	dc, _ := discordgo.New("Bot NDE5ODM3NDcyMDQ2ODQxODY2.WpvqHQ.bpgniyO7WfBwXwEZ8R_4THJm7Zo")
+	godotenv.Load()
+
+	dc, _ := discordgo.New("Bot " + os.Getenv("DISCORD_TOKEN"))
 
 	s := dgrc.New(dc, dgrc.Options{
 		RedisOptions: redis.Options{

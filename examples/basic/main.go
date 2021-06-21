@@ -57,6 +57,17 @@ var cmds = map[string]func(s *discordgo.Session, e *discordgo.MessageCreate, sta
 			fmt.Println(m.User.String())
 		}
 	},
+
+	"messages": func(s *discordgo.Session, e *discordgo.MessageCreate, state *dgrs.State) {
+		membs, err := state.Messages(e.ChannelID, true)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, m := range membs {
+			fmt.Printf("%s - %s\n", m.Author.String(), m.Content)
+		}
+	},
 }
 
 func main() {

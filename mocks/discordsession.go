@@ -74,6 +74,29 @@ func (_m *DiscordSession) ChannelMessage(channelID string, messageID string) (*d
 	return r0, r1
 }
 
+// ChannelMessages provides a mock function with given fields: channelID, limit, beforeID, afterID, aroundID
+func (_m *DiscordSession) ChannelMessages(channelID string, limit int, beforeID string, afterID string, aroundID string) ([]*discordgo.Message, error) {
+	ret := _m.Called(channelID, limit, beforeID, afterID, aroundID)
+
+	var r0 []*discordgo.Message
+	if rf, ok := ret.Get(0).(func(string, int, string, string, string) []*discordgo.Message); ok {
+		r0 = rf(channelID, limit, beforeID, afterID, aroundID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*discordgo.Message)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, int, string, string, string) error); ok {
+		r1 = rf(channelID, limit, beforeID, afterID, aroundID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Guild provides a mock function with given fields: guildID
 func (_m *DiscordSession) Guild(guildID string) (*discordgo.Guild, error) {
 	ret := _m.Called(guildID)

@@ -46,7 +46,7 @@ func (s *State) Roles(guildID string, forceFetch ...bool) (v []*discordgo.Role, 
 	}
 
 	if (len(v) == 0 || optBool(forceFetch)) && s.options.FetchAndStore {
-
+		v, err = s.fetchRoles(guildID)
 	}
 
 	return

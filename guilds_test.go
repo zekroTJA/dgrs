@@ -8,73 +8,75 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testGuild = &discordgo.Guild{
-	ID:   "id",
-	Name: "name",
-	Members: []*discordgo.Member{
-		{
-			GuildID: "memberid",
-			Nick:    "nick",
-			User: &discordgo.User{
-				ID: "memberid",
+func testGuild() *discordgo.Guild {
+	return &discordgo.Guild{
+		ID:   "id",
+		Name: "name",
+		Members: []*discordgo.Member{
+			{
+				GuildID: "memberid",
+				Nick:    "nick",
+				User: &discordgo.User{
+					ID: "memberid",
+				},
 			},
 		},
-	},
-	Roles: []*discordgo.Role{
-		{
-			ID:   "roleid",
-			Name: "rolename",
+		Roles: []*discordgo.Role{
+			{
+				ID:   "roleid",
+				Name: "rolename",
+			},
 		},
-	},
-	Channels: []*discordgo.Channel{
-		{
-			ID:   "chanid",
-			Name: "channame",
+		Channels: []*discordgo.Channel{
+			{
+				ID:   "chanid",
+				Name: "channame",
+			},
 		},
-	},
-	Emojis: []*discordgo.Emoji{
-		{
-			ID:   "emojiid",
-			Name: "emojiname",
+		Emojis: []*discordgo.Emoji{
+			{
+				ID:   "emojiid",
+				Name: "emojiname",
+			},
 		},
-	},
+	}
 }
 
 func TestSetGuild(t *testing.T) {
 	state, _ := obtainInstance()
 
-	guild := new(discordgo.Guild)
-	copyObject(testGuild, guild)
-	guild.Members[0].User = nil
-	err := state.SetGuild(guild)
+	erroneousGuild := testGuild()
+	erroneousGuild.Members[0].User = nil
+	err := state.SetGuild(erroneousGuild)
 	assert.ErrorIs(t, err, ErrMemberUserNil)
 
-	err = state.SetGuild(testGuild)
+	guild := testGuild()
+	err = state.SetGuild(guild)
 	assert.Nil(t, err)
 
 	res := state.client.Get(context.Background(), state.joinKeys(KeyGuild, "id"))
 	assert.Nil(t, res.Err())
-	assert.Equal(t, mustMarshal(testGuild), res.Val())
+	assert.Equal(t, mustMarshal(guild), res.Val())
 
 	res = state.client.Get(context.Background(), state.joinKeys(KeyMember, "id", "memberid"))
 	assert.Nil(t, res.Err())
-	assert.Equal(t, mustMarshal(testGuild.Members[0]), res.Val())
+	assert.Equal(t, mustMarshal(guild.Members[0]), res.Val())
 
 	res = state.client.Get(context.Background(), state.joinKeys(KeyRole, "id", "roleid"))
 	assert.Nil(t, res.Err())
-	assert.Equal(t, mustMarshal(testGuild.Roles[0]), res.Val())
+	assert.Equal(t, mustMarshal(guild.Roles[0]), res.Val())
 
 	res = state.client.Get(context.Background(), state.joinKeys(KeyChannel, "chanid"))
 	assert.Nil(t, res.Err())
-	assert.Equal(t, mustMarshal(testGuild.Channels[0]), res.Val())
+	assert.Equal(t, mustMarshal(guild.Channels[0]), res.Val())
 
 	res = state.client.Get(context.Background(), state.joinKeys(KeyEmoji, "id", "emojiid"))
 	assert.Nil(t, res.Err())
-	assert.Equal(t, mustMarshal(testGuild.Emojis[0]), res.Val())
+	assert.Equal(t, mustMarshal(guild.Emojis[0]), res.Val())
 }
 
 func TestGuild(t *testing.T) {
-	guild := *testGuild
+	guild := testGuild()
 	guild.Members = make([]*discordgo.Member, 0)
 	guild.Roles = make([]*discordgo.Role, 0)
 	guild.Channels = make([]*discordgo.Channel, 0)
@@ -82,7 +84,7 @@ func TestGuild(t *testing.T) {
 
 	state, session := obtainInstance()
 
-	session.On("Guild", "id").Return(&guild, nil)
+	session.On("Guild", "id").Return(guild, nil)
 
 	gr, err := state.Guild("id")
 	assert.Nil(t, err)
@@ -91,7 +93,7 @@ func TestGuild(t *testing.T) {
 	state.options.FetchAndStore = true
 	gr, err = state.Guild("id")
 	assert.Nil(t, err)
-	assert.EqualValues(t, &guild, gr)
+	assert.EqualValues(t, guild, gr)
 }
 
 func TestGuilds(t *testing.T) {

@@ -39,4 +39,7 @@ jobs:
       - name: Upload Coverage Report
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goveralls -coverprofile=covprofile -service=github
+          GO111MODULE: off
+        run: |
+          go get github.com/mattn/goveralls
+          goveralls -coverprofile=covprofile -service=github

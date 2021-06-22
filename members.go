@@ -11,7 +11,7 @@ func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) 
 		return
 	}
 
-	err = s.set(joinKeys(KeyMember, guildID, member.User.ID), member, s.getLifetime(member))
+	err = s.set(s.joinKeys(KeyMember, guildID, member.User.ID), member, s.getLifetime(member))
 	if err != nil {
 		return
 	}
@@ -31,7 +31,7 @@ func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) 
 // is disabled, nil is returned.
 func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *discordgo.Member, err error) {
 	v = &discordgo.Member{}
-	ok, err := s.get(joinKeys(KeyUser, guildID, memberID), v)
+	ok, err := s.get(s.joinKeys(KeyUser, guildID, memberID), v)
 	if !ok {
 		if s.options.FetchAndStore && !optBool(forceNoFetch) {
 			if v, err = s.session.GuildMember(guildID, memberID); v != nil && err == nil {
@@ -49,7 +49,7 @@ func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *disco
 // which are stored in the cache at the given moment.
 func (s *State) Members(guildID string, forceFetch ...bool) (v []*discordgo.Member, err error) {
 	v = make([]*discordgo.Member, 0)
-	if err = s.list(joinKeys(KeyMember, guildID, "*"), &v); err != nil {
+	if err = s.list(s.joinKeys(KeyMember, guildID, "*"), &v); err != nil {
 		return
 	}
 
@@ -78,5 +78,5 @@ func (s *State) Members(guildID string, forceFetch ...bool) (v []*discordgo.Memb
 // RemoveMember removes a member object from the cache by
 // the given guild and member ID.
 func (s *State) RemoveMember(guildID, memberID string) (err error) {
-	return s.del(joinKeys(KeyMember, guildID, memberID))
+	return s.del(s.joinKeys(KeyMember, guildID, memberID))
 }

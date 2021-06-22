@@ -42,6 +42,11 @@ type Options struct {
 	// If no lifetime is set at all, a default value
 	// of DefaultGeneralLifetime is used.
 	Lifetimes Lifetimes
+
+	// The prefix used for the redis storage keys.
+	//
+	// Defaults to 'gdrs'.
+	KeyPrefix string
 }
 
 // Lifetimes wrap a grid of lifetime specifications
@@ -88,6 +93,10 @@ func New(opts Options) (s *State, err error) {
 		s.client = redis.NewClient(&opts.RedisOptions)
 	}
 
+	if opts.KeyPrefix == "" {
+		opts.KeyPrefix = defaultKeyPrefix
+	}
+
 	s.options = &opts
 
 	if opts.FlushOnStartup {
@@ -111,7 +120,7 @@ func New(opts Options) (s *State, err error) {
 // all guild entries, for example.
 func (s *State) Flush(subKeys ...string) (err error) {
 	subKeys = append(subKeys, "*")
-	return s.flush(joinKeys(subKeys...))
+	return s.flush(s.joinKeys(subKeys...))
 }
 
 func (s *State) onEvent(se *discordgo.Session, _e interface{}) (err error) {

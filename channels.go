@@ -4,7 +4,7 @@ import "github.com/bwmarrin/discordgo"
 
 // SetChannel sets the given channel object to the cache.
 func (s *State) SetChannel(channel *discordgo.Channel) (err error) {
-	err = s.set(joinKeys(KeyChannel, channel.ID), channel, s.getLifetime(channel))
+	err = s.set(s.joinKeys(KeyChannel, channel.ID), channel, s.getLifetime(channel))
 	return
 }
 
@@ -18,7 +18,7 @@ func (s *State) SetChannel(channel *discordgo.Channel) (err error) {
 // is disabled, nil is returned.
 func (s *State) Channel(id string) (v *discordgo.Channel, err error) {
 	v = &discordgo.Channel{}
-	ok, err := s.get(joinKeys(KeyChannel, id), v)
+	ok, err := s.get(s.joinKeys(KeyChannel, id), v)
 	if !ok {
 		if s.options.FetchAndStore {
 			if v, err = s.session.Channel(id); v != nil && err == nil {
@@ -35,7 +35,7 @@ func (s *State) Channel(id string) (v *discordgo.Channel, err error) {
 // which are stored in the cache at the given moment.
 func (s *State) Channels(guildID string, forceFetch ...bool) (v []*discordgo.Channel, err error) {
 	v = make([]*discordgo.Channel, 0)
-	if err = s.list(joinKeys(KeyChannel, "*"), &v); err != nil {
+	if err = s.list(s.joinKeys(KeyChannel, "*"), &v); err != nil {
 		return
 	}
 
@@ -65,5 +65,5 @@ func (s *State) Channels(guildID string, forceFetch ...bool) (v []*discordgo.Cha
 
 // RemoveChannel removes a channel object from the cache by the given ID.
 func (s *State) RemoveChannel(id string) (err error) {
-	return s.del(joinKeys(KeyChannel, id))
+	return s.del(s.joinKeys(KeyChannel, id))
 }

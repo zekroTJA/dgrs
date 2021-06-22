@@ -8,7 +8,7 @@ import "github.com/bwmarrin/discordgo"
 // or emojis, these objects are also stroed subsequently in
 // the cache.
 func (s *State) SetGuild(guild *discordgo.Guild) (err error) {
-	err = s.set(joinKeys(KeyGuild, guild.ID), guild, s.getLifetime(guild))
+	err = s.set(s.joinKeys(KeyGuild, guild.ID), guild, s.getLifetime(guild))
 	if err != nil {
 		return
 	}
@@ -51,7 +51,7 @@ func (s *State) SetGuild(guild *discordgo.Guild) (err error) {
 // added to the guild object.
 func (s *State) Guild(id string, hydrate ...bool) (v *discordgo.Guild, err error) {
 	v = &discordgo.Guild{}
-	ok, err := s.get(joinKeys(KeyGuild, id), v)
+	ok, err := s.get(s.joinKeys(KeyGuild, id), v)
 	if !ok {
 		if s.options.FetchAndStore {
 			if v, err = s.session.Guild(id); v != nil && err == nil {
@@ -84,11 +84,11 @@ func (s *State) Guild(id string, hydrate ...bool) (v *discordgo.Guild, err error
 // in the cache at the given moment.
 func (s *State) Guilds() (v []*discordgo.Guild, err error) {
 	v = make([]*discordgo.Guild, 0)
-	err = s.list(joinKeys(KeyGuild, "*"), &v)
+	err = s.list(s.joinKeys(KeyGuild, "*"), &v)
 	return
 }
 
 // RemoveGuild removes a guild object from the cache by the given ID.
 func (s *State) RemoveGuild(id string) (err error) {
-	return s.del(joinKeys(KeyGuild, id))
+	return s.del(s.joinKeys(KeyGuild, id))
 }

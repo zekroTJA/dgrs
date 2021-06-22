@@ -4,7 +4,7 @@ import "github.com/bwmarrin/discordgo"
 
 // SetRole sets the given role object to the cache.
 func (s *State) SetRole(guildID string, role *discordgo.Role) (err error) {
-	err = s.set(joinKeys(KeyRole, guildID, role.ID), role, s.getLifetime(role))
+	err = s.set(s.joinKeys(KeyRole, guildID, role.ID), role, s.getLifetime(role))
 	return
 }
 
@@ -18,17 +18,15 @@ func (s *State) SetRole(guildID string, role *discordgo.Role) (err error) {
 // is disabled, nil is returned.
 func (s *State) Role(guildID, roleID string) (v *discordgo.Role, err error) {
 	v = &discordgo.Role{}
-	ok, err := s.get(joinKeys(KeyRole, guildID, roleID), v)
+	ok, err := s.get(s.joinKeys(KeyRole, guildID, roleID), v)
 	if !ok {
 		if s.options.FetchAndStore {
 			var roles []*discordgo.Role
-			if roles, err = s.session.GuildRoles(guildID); roles != nil && err == nil {
+			if roles, err = s.fetchRoles(guildID); roles != nil && err == nil {
 				for _, r := range roles {
 					if r.ID == roleID {
 						v = r
-					}
-					if err = s.SetRole(guildID, r); err != nil {
-						return
+						break
 					}
 				}
 			}
@@ -41,13 +39,31 @@ func (s *State) Role(guildID, roleID string) (v *discordgo.Role, err error) {
 
 // Roles returns a list of roles which are stored
 // in the cache at the given moment on the given guild.
-func (s *State) Roles(guildID string) (v []*discordgo.Role, err error) {
+func (s *State) Roles(guildID string, forceFetch ...bool) (v []*discordgo.Role, err error) {
 	v = make([]*discordgo.Role, 0)
-	err = s.list(joinKeys(KeyRole, guildID, "*"), &v)
+	if err = s.list(s.joinKeys(KeyRole, guildID, "*"), &v); err != nil {
+		return
+	}
+
+	if (len(v) == 0 || optBool(forceFetch)) && s.options.FetchAndStore {
+
+	}
+
 	return
 }
 
 // RemoveRole removes a role object from the cache by the given ID.
 func (s *State) RemoveRole(guildID, roleID string) (err error) {
-	return s.del(joinKeys(KeyRole, guildID, roleID))
+	return s.del(s.joinKeys(KeyRole, guildID, roleID))
+}
+
+func (s *State) fetchRoles(guildID string) (v []*discordgo.Role, err error) {
+	if v, err = s.session.GuildRoles(guildID); err == nil {
+		for _, r := range v {
+			if err = s.SetRole(guildID, r); err != nil {
+				return
+			}
+		}
+	}
+	return
 }

@@ -8,15 +8,15 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func joinKeys(keys ...string) string {
-	n := len(keyPrefix) + len(keys)
+func (s *State) joinKeys(keys ...string) string {
+	n := len(defaultKeyPrefix) + len(keys)
 	for i := 0; i < len(keys); i++ {
 		n += len(keys[i])
 	}
 
 	b := strings.Builder{}
 	b.Grow(n)
-	b.WriteString(keyPrefix)
+	b.WriteString(s.options.KeyPrefix)
 	for _, s := range keys {
 		b.WriteRune(keySeperator)
 		b.WriteString(s)

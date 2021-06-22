@@ -4,7 +4,7 @@ import "github.com/bwmarrin/discordgo"
 
 // SetEmoji sets the given emoji object to the cache.
 func (s *State) SetEmoji(guildID string, emoji *discordgo.Emoji) (err error) {
-	err = s.set(joinKeys(KeyEmoji, guildID, emoji.ID), emoji, s.getLifetime(emoji))
+	err = s.set(s.joinKeys(KeyEmoji, guildID, emoji.ID), emoji, s.getLifetime(emoji))
 	return
 }
 
@@ -18,7 +18,7 @@ func (s *State) SetEmoji(guildID string, emoji *discordgo.Emoji) (err error) {
 // is disabled, nil is returned.
 func (s *State) Emoji(guildID, emojiID string) (v *discordgo.Emoji, err error) {
 	v = &discordgo.Emoji{}
-	ok, err := s.get(joinKeys(KeyEmoji, guildID, emojiID), v)
+	ok, err := s.get(s.joinKeys(KeyEmoji, guildID, emojiID), v)
 	if !ok {
 		if s.options.FetchAndStore {
 			var emojis []*discordgo.Emoji
@@ -41,7 +41,7 @@ func (s *State) Emoji(guildID, emojiID string) (v *discordgo.Emoji, err error) {
 // which are stored in the cache at the given moment.
 func (s *State) Emojis(guildID string, forceFetch ...bool) (v []*discordgo.Emoji, err error) {
 	v = make([]*discordgo.Emoji, 0)
-	if err = s.list(joinKeys(KeyEmoji, guildID, "*"), &v); err != nil {
+	if err = s.list(s.joinKeys(KeyEmoji, guildID, "*"), &v); err != nil {
 		return
 	}
 
@@ -54,7 +54,7 @@ func (s *State) Emojis(guildID string, forceFetch ...bool) (v []*discordgo.Emoji
 
 // RemoveEmoji removes an emoji object from the cache by the given ID.
 func (s *State) RemoveEmoji(guildID, emojiID string) (err error) {
-	return s.del(joinKeys(KeyEmoji, guildID, emojiID))
+	return s.del(s.joinKeys(KeyEmoji, guildID, emojiID))
 }
 
 func (s *State) fetchEmojis(guildID string) (v []*discordgo.Emoji, err error) {

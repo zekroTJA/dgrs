@@ -102,14 +102,14 @@ func TestEmojis(t *testing.T) {
 
 		session.On("GuildEmojis", "guildid").Return(emojis, nil)
 
-		recChannels, err := state.Emojis("guildid")
+		resEmojis, err := state.Emojis("guildid")
 		assert.Nil(t, err)
-		assert.Equal(t, 0, len(recChannels))
+		assert.Equal(t, 0, len(resEmojis))
 
 		state.options.FetchAndStore = true
-		recChannels, err = state.Emojis("guildid")
+		resEmojis, err = state.Emojis("guildid")
 		assert.Nil(t, err)
-		testEmojis(emojis, recChannels)
+		testEmojis(emojis, resEmojis)
 	}
 }
 

@@ -55,7 +55,7 @@ func TestSetGuild(t *testing.T) {
 	erroneousGuild := testGuild()
 	erroneousGuild.Members[0].User = nil
 	err := state.SetGuild(erroneousGuild)
-	assert.ErrorIs(t, err, ErrMemberUserNil)
+	assert.ErrorIs(t, err, ErrUserNil)
 
 	guild := testGuild()
 	err = state.SetGuild(guild)

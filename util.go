@@ -55,6 +55,8 @@ func (s *State) getLifetime(v interface{}) (d time.Duration) {
 		d = lt.Message
 	case *discordgo.VoiceState:
 		d = lt.VoiceState
+	case *discordgo.Presence:
+		d = lt.Presence
 	}
 
 	if d < 0 {

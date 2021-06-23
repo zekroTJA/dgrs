@@ -60,7 +60,8 @@ type Lifetimes struct {
 	Channel,
 	Emoji,
 	Message,
-	VoiceState time.Duration
+	VoiceState,
+	Presence time.Duration
 }
 
 // State utilizes a redis connection to be able to store and retrieve

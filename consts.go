@@ -10,6 +10,7 @@ const (
 	KeyEmoji         = "emoji"
 	KeyMessage       = "message"
 	KeyVoiceState    = "vs"
+	KeyPresence      = "presence"
 
 	keySeperator = ':'
 )

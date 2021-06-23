@@ -7,7 +7,7 @@ import (
 // SetMember sets the given member object to the cache.
 func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) {
 	if member.User == nil {
-		err = ErrMemberUserNil
+		err = ErrUserNil
 		return
 	}
 

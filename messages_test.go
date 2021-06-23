@@ -157,9 +157,9 @@ func TestRemoveMessage(t *testing.T) {
 
 	assert.Nil(t, state.RemoveMessage(m1.ChannelID, m1.ID))
 
-	res := state.client.Get(context.Background(), state.joinKeys(KeyChannel, m1.ChannelID, m1.ID))
+	res := state.client.Get(context.Background(), state.joinKeys(KeyMessage, m1.ChannelID, m1.ID))
 	assert.ErrorIs(t, res.Err(), redis.Nil)
-	res = state.client.Get(context.Background(), state.joinKeys(KeyChannel, m2.ChannelID, m2.ID))
+	res = state.client.Get(context.Background(), state.joinKeys(KeyMessage, m2.ChannelID, m2.ID))
 	assert.Nil(t, res.Err())
 	assert.Equal(t, mustMarshal(m2), res.Val())
 }

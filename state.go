@@ -154,6 +154,11 @@ func (s *State) onEvent(se *discordgo.Session, _e interface{}) (err error) {
 				return
 			}
 		}
+		for _, p := range e.Presences {
+			if err = s.SetPresence(e.GuildID, p); err != nil {
+				return
+			}
+		}
 	case *discordgo.GuildMemberRemove:
 		if e.Member.User != nil {
 			err = s.RemoveMember(e.GuildID, e.Member.User.ID)

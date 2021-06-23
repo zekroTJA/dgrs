@@ -197,6 +197,8 @@ func (s *State) onEvent(se *discordgo.Session, _e interface{}) (err error) {
 		err = s.SetVoiceState(e.GuildID, e.VoiceState)
 
 	case *discordgo.PresenceUpdate:
+		s.SetPresence(e.GuildID, &e.Presence)
+
 		if e.Status == discordgo.StatusOffline {
 			return
 		}

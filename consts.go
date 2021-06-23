@@ -13,4 +13,6 @@ const (
 	KeyPresence      = "presence"
 
 	keySeperator = ':'
+
+	selfUserKey = "@me"
 )

@@ -49,12 +49,12 @@ func (s *State) RemoveUser(id string) (err error) {
 //
 // This object is retrieved on receiving the 'Ready' event.
 func (s *State) SelfUser() (v *discordgo.User, err error) {
-	return s.User("@me")
+	return s.User(selfUserKey)
 }
 
 // SetSelfUser allows to set a custom user object as self
 // user to the cache.
 func (s *State) SetSelfUser(user *discordgo.User) (err error) {
-	err = s.set(s.joinKeys(KeyUser, "@me"), user, s.getLifetime(user))
+	err = s.set(s.joinKeys(KeyUser, selfUserKey), user, s.getLifetime(user))
 	return
 }

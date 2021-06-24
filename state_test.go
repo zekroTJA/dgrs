@@ -77,7 +77,8 @@ func TestHandlers(t *testing.T) {
 
 		gr, err := state.Guilds()
 		assert.Nil(t, err)
-		assert.Equal(t, guilds, gr)
+		assert.Contains(t, gr, guilds[0])
+		assert.Contains(t, gr, guilds[1])
 	}
 }
 

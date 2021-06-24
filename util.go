@@ -9,7 +9,7 @@ import (
 )
 
 func (s *State) joinKeys(keys ...string) string {
-	n := len(defaultKeyPrefix) + len(keys)
+	n := len(s.options.KeyPrefix) + len(keys)
 	for i := 0; i < len(keys); i++ {
 		n += len(keys[i])
 	}
@@ -59,7 +59,7 @@ func (s *State) getLifetime(v interface{}) (d time.Duration) {
 		d = lt.Presence
 	}
 
-	if d < 0 {
+	if d < 0 || d == 0 && lt.OverrrideZero {
 		d = lt.General
 	}
 
@@ -67,5 +67,5 @@ func (s *State) getLifetime(v interface{}) (d time.Duration) {
 }
 
 func optBool(v []bool) bool {
-	return len(v) != 0 && v[0]
+	return v != nil && len(v) != 0 && v[0]
 }

@@ -52,6 +52,8 @@ type Options struct {
 // Lifetimes wrap a grid of lifetime specifications
 // for each cache object.
 type Lifetimes struct {
+	OverrrideZero bool
+
 	General,
 	Guild,
 	Member,

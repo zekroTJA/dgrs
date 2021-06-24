@@ -170,7 +170,16 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		err = s.RemoveGuild(e.Guild.ID)
 
 	case *discordgo.GuildMemberAdd:
-		err = s.SetMember(e.GuildID, e.Member)
+		if err = s.SetMember(e.GuildID, e.Member); err != nil {
+			return
+		}
+		var guild *discordgo.Guild
+		guild, err = s.Guild(e.GuildID)
+		if err != nil {
+			return
+		}
+		guild.MemberCount++
+		err = s.SetGuild(guild)
 	case *discordgo.GuildMemberUpdate:
 		err = s.SetMember(e.GuildID, e.Member)
 	case *discordgo.GuildMembersChunk:
@@ -185,9 +194,16 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 			}
 		}
 	case *discordgo.GuildMemberRemove:
-		if e.Member.User != nil {
-			err = s.RemoveMember(e.GuildID, e.Member.User.ID)
+		if err = s.RemoveMember(e.GuildID, e.Member.User.ID); err != nil {
+			return
 		}
+		var guild *discordgo.Guild
+		guild, err = s.Guild(e.GuildID)
+		if err != nil {
+			return
+		}
+		guild.MemberCount--
+		err = s.SetGuild(guild)
 
 	case *discordgo.GuildRoleCreate:
 		err = s.SetRole(e.GuildID, e.Role)

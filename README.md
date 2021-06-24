@@ -44,9 +44,10 @@ for _, g := range guilds {
 # ToDo
 
 - [ ] Add more unit tests
-- [ ] Add custom marshal/unmarshal function option
 - [ ] Optimize state updating
 - [ ] Optimize code documentation
+- [x] Bind events to state updates
+- [x] Add custom marshal/unmarshal function option
 
 ---
 

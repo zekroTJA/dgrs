@@ -1,6 +1,7 @@
 package dgrs
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -82,6 +83,31 @@ func TestHandlers(t *testing.T) {
 	}
 }
 
+func TestFlush(t *testing.T) {
+	{
+		s, _ := obtainInstance()
+		populateState(t, s)
+		assert.Nil(t, s.Flush())
+		res := s.client.Keys(context.Background(), s.options.KeyPrefix+string(keySeperator)+"*")
+		assert.Nil(t, res.Err())
+		assert.Equal(t, 0, len(res.Val()))
+	}
+
+	{
+		s, _ := obtainInstance()
+		populateState(t, s)
+		res := s.client.Keys(context.Background(), s.options.KeyPrefix+string(keySeperator)+"*")
+		lenPre := len(res.Val())
+		assert.Nil(t, s.Flush(KeyGuild))
+		res = s.client.Keys(context.Background(), s.options.KeyPrefix+string(keySeperator)+"*")
+		assert.Nil(t, res.Err())
+		assert.Equal(t, lenPre-1, len(res.Val()))
+		res = s.client.Keys(context.Background(), s.options.KeyPrefix+string(keySeperator)+KeyGuild+string(keySeperator)+"*")
+		assert.Nil(t, res.Err())
+		assert.Equal(t, 0, len(res.Val()))
+	}
+}
+
 // ---- HELPERS --------------------------------
 
 func init() {
@@ -122,6 +148,16 @@ func obtainHookesInstance() (
 		DiscordSession: session,
 	})
 	return
+}
+
+func populateState(t *testing.T, s *State) {
+	t.Helper()
+	assert.Nil(t, s.SetGuild(testGuild()))
+	assert.Nil(t, s.SetMember("guildid", testMember()))
+	assert.Nil(t, s.SetUser(testUser()))
+	assert.Nil(t, s.SetChannel(testChannel()))
+	assert.Nil(t, s.SetMessage(testMessage()))
+	assert.Nil(t, s.SetRole("guildid", testRole()))
 }
 
 func mustMarshal(v interface{}) string {

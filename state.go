@@ -124,7 +124,7 @@ func (s *State) Flush(subKeys ...string) (err error) {
 	return s.flush(s.joinKeys(subKeys...))
 }
 
-func (s *State) onEvent(se *discordgo.Session, _e interface{}) (err error) {
+func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 	switch e := (_e).(type) {
 
 	case *discordgo.Ready:

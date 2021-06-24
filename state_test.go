@@ -96,7 +96,9 @@ func obtainInstance() (state *State, session *mocks.DiscordSession) {
 		}),
 		session: session,
 		options: &Options{
-			KeyPrefix: fmt.Sprintf("dgrctest%d", rand.Int()),
+			KeyPrefix:     fmt.Sprintf("dgrctest%d", rand.Int()),
+			MarshalFunc:   json.Marshal,
+			UnmarshalFunc: json.Unmarshal,
 		},
 	}
 	return

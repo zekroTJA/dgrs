@@ -1,7 +1,6 @@
 package dgrs
 
 import (
-	"encoding/json"
 	"strings"
 	"time"
 
@@ -9,7 +8,7 @@ import (
 )
 
 func (s *State) set(key string, v interface{}, lifetime time.Duration) (err error) {
-	data, err := json.Marshal(v)
+	data, err := s.options.MarshalFunc(v)
 	if err != nil {
 		return
 	}
@@ -29,7 +28,7 @@ func (s *State) get(key string, v interface{}) (ok bool, err error) {
 		return
 	}
 	ok = true
-	err = json.Unmarshal(data, v)
+	err = s.options.UnmarshalFunc(data, v)
 	return
 }
 
@@ -76,7 +75,7 @@ func (s *State) list(key string, v interface{}) (err error) {
 
 	b.WriteRune(']')
 
-	err = json.Unmarshal([]byte(b.String()), v)
+	err = s.options.UnmarshalFunc([]byte(b.String()), v)
 	return
 }
 

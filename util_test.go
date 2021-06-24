@@ -49,7 +49,8 @@ func TestGetContext(t *testing.T) {
 		})
 
 		ctx, fn := s.getContext()
-		exCtx, _ := context.WithTimeout(context.Background(), 1*time.Second)
+		exCtx, _cf := context.WithTimeout(context.Background(), 1*time.Second)
+		defer _cf()
 		assert.NotNil(t, fn)
 		expDeadline, _ := exCtx.Deadline()
 		actDeadline, _ := ctx.Deadline()

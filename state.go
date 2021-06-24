@@ -1,12 +1,16 @@
 package dgrs
 
 import (
+	"encoding/json"
 	"log"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-redis/redis/v8"
 )
+
+type MarshalFunc func(interface{}) ([]byte, error)
+type UnmarshalFunc func([]byte, interface{}) error
 
 // Options defines State preferences.
 type Options struct {
@@ -47,6 +51,18 @@ type Options struct {
 	//
 	// Defaults to 'gdrs'.
 	KeyPrefix string
+
+	// The function used to encode objects into the byte
+	// data stored in the cache.
+	//
+	// Defaults to json.Marshal.
+	MarshalFunc MarshalFunc
+
+	// The function used to decode byte data from the
+	// cache into objects.
+	//
+	// Defaults to json.Unmarshal.
+	UnmarshalFunc UnmarshalFunc
 }
 
 // Lifetimes wrap a grid of lifetime specifications
@@ -98,6 +114,13 @@ func New(opts Options) (s *State, err error) {
 
 	if opts.KeyPrefix == "" {
 		opts.KeyPrefix = defaultKeyPrefix
+	}
+
+	if opts.UnmarshalFunc == nil {
+		opts.UnmarshalFunc = json.Unmarshal
+	}
+	if opts.MarshalFunc == nil {
+		opts.MarshalFunc = json.Marshal
 	}
 
 	s.options = &opts

@@ -181,6 +181,44 @@ func TestHandlerMembers(t *testing.T) {
 	assert.Equal(t, presences[1], rp)
 }
 
+func TestHandlerRoles(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	role := testRole("id")
+	const guildID = "guildid"
+
+	handler(ds, &discordgo.GuildRoleCreate{
+		GuildRole: &discordgo.GuildRole{
+			Role:    role,
+			GuildID: guildID,
+		},
+	})
+
+	r, err := state.Role(guildID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, role, r)
+
+	role.Name = "newname"
+	handler(ds, &discordgo.GuildRoleUpdate{
+		GuildRole: &discordgo.GuildRole{
+			Role:    role,
+			GuildID: guildID,
+		},
+	})
+
+	r, err = state.Role(guildID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, role, r)
+	assert.NotSame(t, role, r)
+
+	handler(ds, &discordgo.GuildRoleDelete{
+		RoleID:  role.ID,
+		GuildID: guildID,
+	})
+	r, err = state.Role(guildID, "id")
+	assert.Nil(t, err)
+	assert.Nil(t, r)
+}
+
 func TestFlush(t *testing.T) {
 	{
 		s, _ := obtainInstance()

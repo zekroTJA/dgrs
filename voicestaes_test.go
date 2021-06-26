@@ -41,10 +41,14 @@ func TestVoiceState(t *testing.T) {
 
 	state, _ := obtainInstance()
 
-	err := state.set(state.joinKeys(KeyVoiceState, "guildid", vs.UserID), vs, state.getLifetime(vs))
+	pr, err := state.VoiceState("guildid", "nonexistent")
+	assert.Nil(t, err)
+	assert.Nil(t, pr)
+
+	err = state.set(state.joinKeys(KeyVoiceState, "guildid", vs.UserID), vs, state.getLifetime(vs))
 	assert.Nil(t, err)
 
-	pr, err := state.VoiceState("guildid", vs.UserID)
+	pr, err = state.VoiceState("guildid", vs.UserID)
 	assert.Nil(t, err)
 	assert.EqualValues(t, vs, pr)
 }

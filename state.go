@@ -175,7 +175,7 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		}
 		var guild *discordgo.Guild
 		guild, err = s.Guild(e.GuildID)
-		if err != nil {
+		if err != nil || guild == nil {
 			return
 		}
 		guild.MemberCount++
@@ -199,7 +199,7 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		}
 		var guild *discordgo.Guild
 		guild, err = s.Guild(e.GuildID)
-		if err != nil {
+		if err != nil || guild == nil {
 			return
 		}
 		guild.MemberCount--

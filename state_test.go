@@ -17,6 +17,10 @@ import (
 	"github.com/zekrotja/dgrs/mocks"
 )
 
+var (
+	ds = &discordgo.Session{}
+)
+
 func TestNew(t *testing.T) {
 	{
 		s, err := New(Options{})
@@ -55,32 +59,126 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestHandlers(t *testing.T) {
-	// Dummy session instance, not actually used
-	ds := &discordgo.Session{}
-
-	{
-		state, _, handler := obtainHookesInstance()
-		self := testUser("selfuser")
-		guilds := []*discordgo.Guild{
-			testGuild("g1"),
-			testGuild("g2"),
-		}
-
-		handler(ds, &discordgo.Ready{
-			User:   self,
-			Guilds: guilds,
-		})
-
-		rs, err := state.SelfUser()
-		assert.Nil(t, err)
-		assert.Equal(t, self, rs)
-
-		gr, err := state.Guilds()
-		assert.Nil(t, err)
-		assert.Contains(t, gr, guilds[0])
-		assert.Contains(t, gr, guilds[1])
+func TestHandlerReady(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	self := testUser("selfuser")
+	guilds := []*discordgo.Guild{
+		testGuild("g1"),
+		testGuild("g2"),
 	}
+
+	handler(ds, &discordgo.Ready{
+		User:   self,
+		Guilds: guilds,
+	})
+
+	rs, err := state.SelfUser()
+	assert.Nil(t, err)
+	assert.Equal(t, self, rs)
+
+	gr, err := state.Guilds()
+	assert.Nil(t, err)
+	assert.Contains(t, gr, guilds[0])
+	assert.Contains(t, gr, guilds[1])
+}
+
+func TestHandlerGuilds(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	guild := testGuild("id")
+
+	handler(ds, &discordgo.GuildCreate{
+		Guild: guild,
+	})
+
+	r, err := state.Guild("id")
+	assert.Nil(t, err)
+	assert.Equal(t, guild, r)
+
+	guild.MemberCount = 5
+	handler(ds, &discordgo.GuildUpdate{
+		Guild: guild,
+	})
+
+	r, err = state.Guild("id")
+	assert.Nil(t, err)
+	assert.Equal(t, guild, r)
+	assert.NotSame(t, guild, r)
+
+	handler(ds, &discordgo.GuildDelete{
+		Guild: guild,
+	})
+	r, err = state.Guild("id")
+	assert.Nil(t, err)
+	assert.Nil(t, r)
+}
+
+func TestHandlerMembers(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	const guildID = "guildid"
+	member := testMember("id")
+	member.GuildID = guildID
+
+	guild := testGuild(guildID)
+	assert.Nil(t, state.SetGuild(guild))
+	mcb := guild.MemberCount
+
+	handler(ds, &discordgo.GuildMemberAdd{
+		Member: member,
+	})
+	r, err := state.Member(guildID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, member, r)
+	rg, err := state.Guild(guildID)
+	assert.Nil(t, err)
+	assert.Equal(t, mcb+1, rg.MemberCount)
+
+	member.Nick = "Poggers"
+	handler(ds, &discordgo.GuildMemberUpdate{
+		Member: member,
+	})
+	r, err = state.Member(guildID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, member, r)
+	assert.NotSame(t, member, r)
+	rg, err = state.Guild(guildID)
+	assert.Nil(t, err)
+	assert.Equal(t, mcb+1, rg.MemberCount)
+
+	handler(ds, &discordgo.GuildMemberRemove{
+		Member: member,
+	})
+	r, err = state.Member(guildID, "id")
+	assert.Nil(t, err)
+	assert.Nil(t, r)
+	rg, err = state.Guild(guildID)
+	assert.Nil(t, err)
+	assert.Equal(t, mcb, rg.MemberCount)
+
+	members := []*discordgo.Member{
+		testMember("id1"),
+		testMember("id2"),
+	}
+	presences := []*discordgo.Presence{
+		testPresence("id1"),
+		testPresence("id2"),
+	}
+	handler(ds, &discordgo.GuildMembersChunk{
+		Members:   members,
+		Presences: presences,
+		GuildID:   guildID,
+	})
+	r, err = state.Member(guildID, "id1")
+	assert.Nil(t, err)
+	assert.Equal(t, members[0], r)
+	r, err = state.Member(guildID, "id2")
+	assert.Nil(t, err)
+	assert.Equal(t, members[1], r)
+	rp, err := state.Presence(guildID, "id1")
+	assert.Nil(t, err)
+	assert.Equal(t, presences[0], rp)
+	rp, err = state.Presence(guildID, "id2")
+	assert.Nil(t, err)
+	assert.Equal(t, presences[1], rp)
 }
 
 func TestFlush(t *testing.T) {
@@ -144,8 +242,9 @@ func obtainHookesInstance() (
 		Return(func() {})
 
 	state, _ = New(Options{
-		FetchAndStore:  true,
+		FetchAndStore:  false,
 		DiscordSession: session,
+		KeyPrefix:      fmt.Sprintf("dgrctest%d", rand.Int()),
 	})
 	return
 }

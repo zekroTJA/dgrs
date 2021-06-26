@@ -31,7 +31,7 @@ func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) 
 // is disabled, nil is returned.
 func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *discordgo.Member, err error) {
 	v = &discordgo.Member{}
-	ok, err := s.get(s.joinKeys(KeyUser, guildID, memberID), v)
+	ok, err := s.get(s.joinKeys(KeyMember, guildID, memberID), v)
 	if !ok {
 		if s.options.FetchAndStore && !optBool(forceNoFetch) {
 			if v, err = s.session.GuildMember(guildID, memberID); v != nil && err == nil {

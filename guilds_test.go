@@ -36,8 +36,9 @@ func testGuild(id ...string) *discordgo.Guild {
 		},
 		Channels: []*discordgo.Channel{
 			{
-				ID:   "chanid",
-				Name: "channame",
+				ID:      "chanid",
+				Name:    "channame",
+				GuildID: gid,
 			},
 		},
 		Emojis: []*discordgo.Emoji{
@@ -83,24 +84,56 @@ func TestSetGuild(t *testing.T) {
 }
 
 func TestGuild(t *testing.T) {
-	guild := testGuild()
-	guild.Members = make([]*discordgo.Member, 0)
-	guild.Roles = make([]*discordgo.Role, 0)
-	guild.Channels = make([]*discordgo.Channel, 0)
-	guild.Emojis = make([]*discordgo.Emoji, 0)
+	{
+		guild := testGuild()
+		guild.Members = make([]*discordgo.Member, 0)
+		guild.Roles = make([]*discordgo.Role, 0)
+		guild.Channels = make([]*discordgo.Channel, 0)
+		guild.Emojis = make([]*discordgo.Emoji, 0)
 
-	state, session := obtainInstance()
+		state, session := obtainInstance()
 
-	session.On("Guild", "id").Return(guild, nil)
+		session.On("Guild", "id").Return(guild, nil)
 
-	gr, err := state.Guild("id")
-	assert.Nil(t, err)
-	assert.Nil(t, gr)
+		gr, err := state.Guild("id")
+		assert.Nil(t, err)
+		assert.Nil(t, gr)
 
-	state.options.FetchAndStore = true
-	gr, err = state.Guild("id")
-	assert.Nil(t, err)
-	assert.EqualValues(t, guild, gr)
+		state.options.FetchAndStore = true
+		gr, err = state.Guild("id")
+		assert.Nil(t, err)
+		assert.Equal(t, guild, gr)
+	}
+
+	{
+		guild := testGuild()
+		guildRet := testGuild()
+		guildRet.Members = make([]*discordgo.Member, 0)
+		guildRet.Roles = make([]*discordgo.Role, 0)
+		guildRet.Channels = make([]*discordgo.Channel, 0)
+		guildRet.Emojis = make([]*discordgo.Emoji, 0)
+
+		state, session := obtainInstance()
+
+		session.On("Guild", "id").Return(guildRet, nil)
+		m := guild.Members[0]
+		state.set(state.joinKeys(KeyMember, guild.ID, m.User.ID), m, 0)
+		r := guild.Roles[0]
+		state.set(state.joinKeys(KeyRole, guild.ID, r.ID), r, 0)
+		c := guild.Channels[0]
+		state.set(state.joinKeys(KeyChannel, c.ID), c, 0)
+		e := guild.Emojis[0]
+		state.set(state.joinKeys(KeyEmoji, guild.ID, e.ID), e, 0)
+
+		gr, err := state.Guild("id", true)
+		assert.Nil(t, err)
+		assert.Nil(t, gr)
+
+		state.options.FetchAndStore = true
+		gr, err = state.Guild("id", true)
+		assert.Nil(t, err)
+		assert.Equal(t, guild, gr)
+	}
 }
 
 func TestGuilds(t *testing.T) {

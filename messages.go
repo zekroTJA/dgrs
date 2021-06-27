@@ -9,7 +9,8 @@ func (s *State) SetMessage(message *discordgo.Message) (err error) {
 		return
 	}
 
-	if message.Member != nil {
+	if message.Member != nil && message.Author != nil {
+		message.Member.User = message.Author
 		if err = s.SetMember(message.GuildID, message.Member); err != nil {
 			return
 		}

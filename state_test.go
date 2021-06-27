@@ -360,6 +360,41 @@ func TestHandlerVoiceState(t *testing.T) {
 	assert.Nil(t, r)
 }
 
+func TestHandlerPresence(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	presence := testPresence("id")
+	const guildID = "guildid"
+
+	handler(ds, &discordgo.PresenceUpdate{
+		Presence: *presence,
+		GuildID:  guildID,
+	})
+
+	r, err := state.Presence(guildID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, presence, r)
+
+	rm, err := state.Member(guildID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, &discordgo.Member{
+		GuildID: guildID,
+		User:    presence.User,
+	}, rm)
+
+	presence.User.Username = "newUsername"
+	handler(ds, &discordgo.PresenceUpdate{
+		Presence: *presence,
+		GuildID:  guildID,
+	})
+
+	rm, err = state.Member(guildID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, &discordgo.Member{
+		GuildID: guildID,
+		User:    presence.User,
+	}, rm)
+}
+
 func TestFlush(t *testing.T) {
 	{
 		s, _ := obtainInstance()

@@ -333,6 +333,33 @@ func TestHandlerMessage(t *testing.T) {
 	}
 }
 
+func TestHandlerVoiceState(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	vs := testVoiceState("id")
+	const guildID = "guildid"
+	vs.GuildID = guildID
+
+	handler(ds, &discordgo.VoiceStateUpdate{
+		VoiceState: vs,
+	})
+
+	r, err := state.VoiceState(guildID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, vs, r)
+
+	handler(ds, &discordgo.VoiceStateUpdate{
+		VoiceState: &discordgo.VoiceState{
+			ChannelID: "",
+			GuildID:   guildID,
+			UserID:    vs.UserID,
+		},
+	})
+
+	r, err = state.VoiceState(guildID, "id")
+	assert.Nil(t, err)
+	assert.Nil(t, r)
+}
+
 func TestFlush(t *testing.T) {
 	{
 		s, _ := obtainInstance()

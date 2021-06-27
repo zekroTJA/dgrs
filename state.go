@@ -240,7 +240,11 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		}
 
 	case *discordgo.VoiceStateUpdate:
-		err = s.SetVoiceState(e.GuildID, e.VoiceState)
+		if e.ChannelID == "" {
+			err = s.RemoveVoiceState(e.GuildID, e.UserID)
+		} else {
+			err = s.SetVoiceState(e.GuildID, e.VoiceState)
+		}
 
 	case *discordgo.PresenceUpdate:
 		s.SetPresence(e.GuildID, &e.Presence)

@@ -219,6 +219,120 @@ func TestHandlerRoles(t *testing.T) {
 	assert.Nil(t, r)
 }
 
+func TestHandlerEmojis(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	emojis := []*discordgo.Emoji{
+		testEmoji("id1"),
+		testEmoji("id2"),
+	}
+	const guildID = "guildid"
+
+	handler(ds, &discordgo.GuildEmojisUpdate{
+		GuildID: guildID,
+		Emojis:  emojis,
+	})
+
+	r, err := state.Emoji(guildID, "id1")
+	assert.Nil(t, err)
+	assert.Equal(t, emojis[0], r)
+	r, err = state.Emoji(guildID, "id2")
+	assert.Nil(t, err)
+	assert.Equal(t, emojis[1], r)
+}
+
+func TestHandlerChannel(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	channel := testChannel("id")
+	const guildID = "guildid"
+	channel.GuildID = guildID
+
+	handler(ds, &discordgo.ChannelCreate{
+		Channel: channel,
+	})
+
+	r, err := state.Channel("id")
+	assert.Nil(t, err)
+	assert.Equal(t, channel, r)
+
+	channel.Name = "newname"
+	handler(ds, &discordgo.ChannelUpdate{
+		Channel: channel,
+	})
+
+	r, err = state.Channel("id")
+	assert.Nil(t, err)
+	assert.Equal(t, channel, r)
+	assert.NotSame(t, channel, r)
+
+	handler(ds, &discordgo.ChannelDelete{
+		Channel: channel,
+	})
+	r, err = state.Channel("id")
+	assert.Nil(t, err)
+	assert.Nil(t, r)
+}
+
+func TestHandlerMessage(t *testing.T) {
+	state, _, handler := obtainHookesInstance()
+	message := testMessage("id")
+	const chanID = "chanid"
+	message.ChannelID = chanID
+
+	handler(ds, &discordgo.MessageCreate{
+		Message: message,
+	})
+
+	r, err := state.Message(chanID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, message, r)
+
+	message.Content = "new content"
+	handler(ds, &discordgo.MessageUpdate{
+		Message: message,
+	})
+
+	r, err = state.Message(chanID, "id")
+	assert.Nil(t, err)
+	assert.Equal(t, message, r)
+	assert.NotSame(t, message, r)
+
+	handler(ds, &discordgo.MessageDelete{
+		Message: message,
+	})
+	r, err = state.Message(chanID, "id")
+	assert.Nil(t, err)
+	assert.Nil(t, r)
+
+	messages := []*discordgo.Message{
+		testMessage("idb1"),
+		testMessage("idb2"),
+		testMessage("idb3"),
+		testMessage("idb4"),
+	}
+	messageIDs := make([]string, len(messages))
+
+	for i, m := range messages {
+		m.ChannelID = chanID
+		handler(ds, &discordgo.MessageCreate{Message: m})
+		messageIDs[i] = m.ID
+	}
+
+	handler(ds, &discordgo.MessageDeleteBulk{
+		Messages:  messageIDs[1:],
+		ChannelID: chanID,
+		GuildID:   "guildid",
+	})
+
+	r, err = state.Message(chanID, "idb1")
+	assert.Nil(t, err)
+	assert.Equal(t, messages[0], r)
+	for _, i := range messageIDs[1:] {
+		r, err = state.Message(chanID, i)
+		assert.Nil(t, err)
+		assert.Nil(t, r)
+	}
+}
+
 func TestFlush(t *testing.T) {
 	{
 		s, _ := obtainInstance()

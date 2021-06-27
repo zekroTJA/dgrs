@@ -43,9 +43,9 @@ for _, g := range guilds {
 
 # ToDo
 
-- [ ] Add more unit tests (> 80% coverage)
 - [ ] Optimize state updating
 - [ ] Optimize code documentation
+- [x] Add more unit tests (> 80% coverage)
 - [x] Bind events to state updates
 - [x] Add custom marshal/unmarshal function option
 

@@ -60,12 +60,20 @@ func TestNew(t *testing.T) {
 }
 
 func TestHandlerReady(t *testing.T) {
-	state, _, handler := obtainHookesInstance()
+	state, session, handler := obtainHookesInstance()
+	state.options.FetchAndStore = true
 	self := testUser("selfuser")
 	guilds := []*discordgo.Guild{
 		testGuild("g1"),
 		testGuild("g2"),
+		{
+			ID:          "g3",
+			Unavailable: true,
+		},
 	}
+
+	tg3 := testGuild("g3")
+	session.On("Guild", "g3").Return(tg3, nil)
 
 	handler(ds, &discordgo.Ready{
 		User:   self,
@@ -80,6 +88,9 @@ func TestHandlerReady(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Contains(t, gr, guilds[0])
 	assert.Contains(t, gr, guilds[1])
+	assert.Contains(t, gr, tg3)
+
+	session.AssertCalled(t, "Guild", "g3")
 }
 
 func TestHandlerGuilds(t *testing.T) {

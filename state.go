@@ -154,12 +154,16 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 
 	case *discordgo.Ready:
 		for _, g := range e.Guilds {
-			if err = s.SetGuild(g); err != nil {
+			if g.Unavailable {
+				if _, err = s.Guild(g.ID); err != nil {
+					return
+				}
+			} else if err = s.SetGuild(g); err != nil {
 				return
 			}
-			if err = s.SetSelfUser(e.User); err != nil {
-				return
-			}
+		}
+		if err = s.SetSelfUser(e.User); err != nil {
+			return
 		}
 
 	case *discordgo.GuildCreate:

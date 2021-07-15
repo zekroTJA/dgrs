@@ -107,18 +107,61 @@ func TestChannels(t *testing.T) {
 }
 
 func TestRemoveChannel(t *testing.T) {
-	state, _ := obtainInstance()
+	{
+		state, _ := obtainInstance()
 
-	c1 := testChannel(fmt.Sprintf("id%d", 1))
-	assert.Nil(t, state.SetChannel(c1))
-	c2 := testChannel(fmt.Sprintf("id%d", 2))
-	assert.Nil(t, state.SetChannel(c2))
+		c1 := testChannel(fmt.Sprintf("id%d", 1))
+		assert.Nil(t, state.SetChannel(c1))
+		c2 := testChannel(fmt.Sprintf("id%d", 2))
+		assert.Nil(t, state.SetChannel(c2))
 
-	assert.Nil(t, state.RemoveChannel(c1.ID))
+		assert.Nil(t, state.RemoveChannel(c1.ID))
 
-	res := state.client.Get(context.Background(), state.joinKeys(KeyChannel, c1.ID))
-	assert.ErrorIs(t, res.Err(), redis.Nil)
-	res = state.client.Get(context.Background(), state.joinKeys(KeyChannel, c2.ID))
-	assert.Nil(t, res.Err())
-	assert.Equal(t, mustMarshal(c2), res.Val())
+		res := state.client.Get(context.Background(), state.joinKeys(KeyChannel, c1.ID))
+		assert.ErrorIs(t, res.Err(), redis.Nil)
+		res = state.client.Get(context.Background(), state.joinKeys(KeyChannel, c2.ID))
+		assert.Nil(t, res.Err())
+		assert.Equal(t, mustMarshal(c2), res.Val())
+	}
+
+	{
+		state, _ := obtainInstance()
+
+		c := testChannel()
+		assert.Nil(t, state.SetChannel(c))
+
+		msgs := []*discordgo.Message{
+			{
+				ID:        "msgid1",
+				ChannelID: c.ID,
+				Content:   "test",
+			},
+			{
+				ID:        "msgid2",
+				ChannelID: c.ID,
+				Content:   "test",
+			},
+			{
+				ID:        "msgid3",
+				ChannelID: c.ID,
+				Content:   "test",
+			},
+		}
+
+		for _, m := range msgs {
+			err := state.SetMessage(m)
+			assert.Nil(t, err)
+		}
+
+		msgsRec, err := state.Messages(c.ID)
+		assert.Nil(t, err)
+		assert.EqualValues(t, msgs, msgsRec)
+
+		err = state.RemoveChannel(c.ID, true)
+		assert.Nil(t, err)
+
+		msgsRec, err = state.Messages(c.ID)
+		assert.Nil(t, err)
+		assert.Empty(t, msgsRec)
+	}
 }

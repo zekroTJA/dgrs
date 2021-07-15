@@ -64,6 +64,19 @@ func (s *State) Channels(guildID string, forceFetch ...bool) (v []*discordgo.Cha
 }
 
 // RemoveChannel removes a channel object from the cache by the given ID.
-func (s *State) RemoveChannel(id string) (err error) {
-	return s.del(s.joinKeys(KeyChannel, id))
+//
+// When dehydrate is passed as true, messages in this channel which
+// are cached are purged from cache as well.
+func (s *State) RemoveChannel(id string, dehydrate ...bool) (err error) {
+	if err = s.del(s.joinKeys(KeyChannel, id)); err != nil {
+		return
+	}
+
+	if optBool(dehydrate) {
+		if err = s.delPattern(s.joinKeys(KeyMessage, id, "*")); err != nil {
+			return
+		}
+	}
+
+	return
 }

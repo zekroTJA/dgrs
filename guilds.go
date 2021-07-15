@@ -89,6 +89,38 @@ func (s *State) Guilds() (v []*discordgo.Guild, err error) {
 }
 
 // RemoveGuild removes a guild object from the cache by the given ID.
-func (s *State) RemoveGuild(id string) (err error) {
-	return s.del(s.joinKeys(KeyGuild, id))
+//
+// When dehydrate is passed as true, objects linked to this guild
+// (members, roles, voice states, emojis, channels and messages)
+// are purged from cache as well.
+func (s *State) RemoveGuild(id string, dehydrate ...bool) (err error) {
+	if err = s.del(s.joinKeys(KeyGuild, id)); err != nil {
+		return
+	}
+
+	if optBool(dehydrate) {
+		if err = s.delPattern(s.joinKeys(KeyMember, id, "*")); err != nil {
+			return
+		}
+		if err = s.delPattern(s.joinKeys(KeyRole, id, "*")); err != nil {
+			return
+		}
+		if err = s.delPattern(s.joinKeys(KeyVoiceState, id, "*")); err != nil {
+			return
+		}
+		if err = s.delPattern(s.joinKeys(KeyEmoji, id, "*")); err != nil {
+			return
+		}
+		var chans []*discordgo.Channel
+		if chans, err = s.Channels(id); err != nil {
+			return
+		}
+		for _, c := range chans {
+			if err = s.RemoveChannel(c.ID, true); err != nil {
+				return
+			}
+		}
+	}
+
+	return
 }

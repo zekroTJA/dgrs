@@ -33,26 +33,47 @@ func (s *State) get(key string, v interface{}) (ok bool, err error) {
 }
 
 func (s *State) del(keys ...string) (err error) {
+	if len(keys) == 0 {
+		return
+	}
 	ctx, cf := s.getContext()
 	defer cf()
 	res := s.client.Del(ctx, keys...)
 	return res.Err()
 }
 
-func (s *State) list(key string, v interface{}) (err error) {
+func (s *State) delPattern(pattern string) (err error) {
+	keys, err := s.explodeKeys(pattern)
+	if err != nil {
+		return
+	}
+	err = s.del(keys...)
+	return
+}
+
+func (s *State) explodeKeys(pattern string) (keys []string, err error) {
 	ctx, cf := s.getContext()
 	defer cf()
-	keys := s.client.Keys(ctx, key)
-	if err = keys.Err(); err != nil {
+	res := s.client.Keys(ctx, pattern)
+	if err = res.Err(); err != nil {
+		return
+	}
+	keys = res.Val()
+	return
+}
+
+func (s *State) list(pattern string, v interface{}) (err error) {
+	keys, err := s.explodeKeys(pattern)
+	if err != nil {
 		return
 	}
 
 	var vals []interface{}
 
-	if len(keys.Val()) > 0 {
+	if len(keys) > 0 {
 		ctx, cf := s.getContext()
 		defer cf()
-		res := s.client.MGet(ctx, keys.Val()...)
+		res := s.client.MGet(ctx, keys...)
 		if err = res.Err(); err != nil {
 			return
 		}

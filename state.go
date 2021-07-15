@@ -167,11 +167,14 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		}
 
 	case *discordgo.GuildCreate:
-		err = s.SetGuild(e.Guild)
+		if err = s.SetGuild(e.Guild); err != nil {
+			return
+		}
+		_, err = s.Members(e.Guild.ID, true)
 	case *discordgo.GuildUpdate:
 		err = s.SetGuild(e.Guild)
 	case *discordgo.GuildDelete:
-		err = s.RemoveGuild(e.Guild.ID)
+		err = s.RemoveGuild(e.Guild.ID, true)
 
 	case *discordgo.GuildMemberAdd:
 		if err = s.SetMember(e.GuildID, e.Member); err != nil {
@@ -228,7 +231,7 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 	case *discordgo.ChannelUpdate:
 		err = s.SetChannel(e.Channel)
 	case *discordgo.ChannelDelete:
-		err = s.RemoveChannel(e.Channel.ID)
+		err = s.RemoveChannel(e.Channel.ID, true)
 
 	case *discordgo.MessageCreate:
 		err = s.SetMessage(e.Message)

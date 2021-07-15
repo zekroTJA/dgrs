@@ -166,18 +166,62 @@ func TestGuilds(t *testing.T) {
 }
 
 func TestRemoveGuild(t *testing.T) {
-	state, _ := obtainInstance()
+	{
+		state, _ := obtainInstance()
 
-	g1 := testGuild(fmt.Sprintf("id%d", 1))
-	assert.Nil(t, state.SetGuild(g1))
-	g2 := testGuild(fmt.Sprintf("id%d", 2))
-	assert.Nil(t, state.SetGuild(g2))
+		g1 := testGuild(fmt.Sprintf("id%d", 1))
+		assert.Nil(t, state.SetGuild(g1))
+		g2 := testGuild(fmt.Sprintf("id%d", 2))
+		assert.Nil(t, state.SetGuild(g2))
 
-	assert.Nil(t, state.RemoveGuild(g1.ID))
+		assert.Nil(t, state.RemoveGuild(g1.ID))
 
-	res := state.client.Get(context.Background(), state.joinKeys(KeyGuild, g1.ID))
-	assert.ErrorIs(t, res.Err(), redis.Nil)
-	res = state.client.Get(context.Background(), state.joinKeys(KeyGuild, g2.ID))
-	assert.Nil(t, res.Err())
-	assert.Equal(t, mustMarshal(g2), res.Val())
+		res := state.client.Get(context.Background(), state.joinKeys(KeyGuild, g1.ID))
+		assert.ErrorIs(t, res.Err(), redis.Nil)
+		res = state.client.Get(context.Background(), state.joinKeys(KeyGuild, g2.ID))
+		assert.Nil(t, res.Err())
+		assert.Equal(t, mustMarshal(g2), res.Val())
+	}
+
+	{
+		state, _ := obtainInstance()
+
+		g := testGuild()
+		assert.Nil(t, state.SetGuild(g))
+
+		membs, err := state.Members(g.ID)
+		assert.Nil(t, err)
+		assert.EqualValues(t, g.Members, membs)
+
+		roles, err := state.Roles(g.ID)
+		assert.Nil(t, err)
+		assert.EqualValues(t, g.Roles, roles)
+
+		chans, err := state.Channels(g.ID)
+		assert.Nil(t, err)
+		assert.EqualValues(t, g.Channels, chans)
+
+		emojis, err := state.Emojis(g.ID)
+		assert.Nil(t, err)
+		assert.EqualValues(t, g.Emojis, emojis)
+
+		err = state.RemoveGuild(g.ID, true)
+		assert.Nil(t, err)
+
+		membs, err = state.Members(g.ID)
+		assert.Nil(t, err)
+		assert.Empty(t, membs)
+
+		roles, err = state.Roles(g.ID)
+		assert.Nil(t, err)
+		assert.Empty(t, roles)
+
+		chans, err = state.Channels(g.ID)
+		assert.Nil(t, err)
+		assert.Empty(t, chans)
+
+		emojis, err = state.Emojis(g.ID)
+		assert.Nil(t, err)
+		assert.Empty(t, emojis)
+	}
 }

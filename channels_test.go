@@ -155,7 +155,7 @@ func TestRemoveChannel(t *testing.T) {
 
 		msgsRec, err := state.Messages(c.ID)
 		assert.Nil(t, err)
-		assert.EqualValues(t, msgs, msgsRec)
+		assert.ElementsMatch(t, msgs, msgsRec)
 
 		err = state.RemoveChannel(c.ID, true)
 		assert.Nil(t, err)

@@ -191,19 +191,19 @@ func TestRemoveGuild(t *testing.T) {
 
 		membs, err := state.Members(g.ID)
 		assert.Nil(t, err)
-		assert.EqualValues(t, g.Members, membs)
+		assert.ElementsMatch(t, g.Members, membs)
 
 		roles, err := state.Roles(g.ID)
 		assert.Nil(t, err)
-		assert.EqualValues(t, g.Roles, roles)
+		assert.ElementsMatch(t, g.Roles, roles)
 
 		chans, err := state.Channels(g.ID)
 		assert.Nil(t, err)
-		assert.EqualValues(t, g.Channels, chans)
+		assert.ElementsMatch(t, g.Channels, chans)
 
 		emojis, err := state.Emojis(g.ID)
 		assert.Nil(t, err)
-		assert.EqualValues(t, g.Emojis, emojis)
+		assert.ElementsMatch(t, g.Emojis, emojis)
 
 		err = state.RemoveGuild(g.ID, true)
 		assert.Nil(t, err)

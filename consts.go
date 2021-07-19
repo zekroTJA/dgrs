@@ -5,6 +5,7 @@ const (
 	KeyGuild         = "guild"
 	KeyMember        = "member"
 	KeyUser          = "user"
+	KeyUserGuilds    = "user-guilds"
 	KeyRole          = "role"
 	KeyChannel       = "chan"
 	KeyEmoji         = "emoji"

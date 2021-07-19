@@ -58,3 +58,83 @@ func (s *State) SetSelfUser(user *discordgo.User) (err error) {
 	err = s.set(s.joinKeys(KeyUser, selfUserKey), user, s.getLifetime(user))
 	return
 }
+
+// UserGuilds returns a slice of Guild IDs the user is
+// member of.
+//
+// If forceFetch is passed as true, the list of guilds
+// is fetched from cache. There is no deep fetch, that
+// means, the particular guilds and members are not
+// fetched.
+func (s *State) UserGuilds(id string, forceFetch ...bool) (res []string, err error) {
+	ok, err := s.get(s.joinKeys(KeyUserGuilds, id), &res)
+
+	if !ok && s.options.FetchAndStore || optBool(forceFetch) {
+		res = make([]string, 0)
+		var guilds []*discordgo.Guild
+		guilds, err = s.Guilds()
+		if err != nil {
+			return
+		}
+		var membs []*discordgo.Member
+		for _, guild := range guilds {
+			membs, err = s.Members(guild.ID)
+			if err != nil {
+				return
+			}
+		membLoop:
+			for _, memb := range membs {
+				if memb.User.ID == id {
+					res = append(res, guild.ID)
+					break membLoop
+				}
+			}
+		}
+		err = s.setUserGuilds(id, res)
+	}
+
+	return
+}
+
+// AddUserGuilds adds a Guild ID to the list of guild IDs
+// the given user is member of.
+func (s *State) AddUserGuilds(userID string, guildIDs ...string) (err error) {
+	var guilds []string
+	if guilds, err = s.UserGuilds(userID); err != nil {
+		return
+	}
+
+	for _, id := range guildIDs {
+		if !stringSliceContains(guilds, id) {
+			guilds = append(guilds, id)
+		}
+	}
+
+	err = s.setUserGuilds(userID, guilds)
+
+	return
+}
+
+// RemoveUserGuilds removes a Guild ID from the list of guild IDs
+// the given user is member of.
+func (s *State) RemoveUserGuilds(userID string, guildIDs ...string) (err error) {
+	var guilds []string
+	if guilds, err = s.UserGuilds(userID); err != nil {
+		return
+	}
+
+	for _, id := range guildIDs {
+		i := stringSliceIndex(guilds, id)
+		if i != -1 {
+			guilds = append(guilds[:i], guilds[i+1:]...)
+		}
+	}
+
+	err = s.setUserGuilds(userID, guilds)
+
+	return
+}
+
+func (s *State) setUserGuilds(userID string, guildIDs []string) error {
+	return s.set(s.joinKeys(KeyUserGuilds, userID), guildIDs, s.getLifetime((*discordgo.Member)(nil)))
+}

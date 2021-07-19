@@ -121,3 +121,84 @@ func TestSetSelfUser(t *testing.T) {
 	assert.Nil(t, res.Err())
 	assert.Equal(t, mustMarshal(user), res.Val())
 }
+
+func TestUserGuilds(t *testing.T) {
+	{
+		state, _ := obtainInstance()
+		gids := []string{"1", "2", "3", "4"}
+		assert.Nil(t, state.setUserGuilds("uid", gids))
+
+		obtGids, err := state.UserGuilds("uid")
+		assert.Nil(t, err)
+		assert.ElementsMatch(t, gids, obtGids)
+	}
+	{
+		state, _ := obtainInstance()
+		gids := []string{"1", "3", "4", "6"}
+		negids := []string{"2", "5", "7"}
+		for _, gid := range gids {
+			guild := &discordgo.Guild{
+				ID: gid,
+				Members: []*discordgo.Member{
+					{User: &discordgo.User{ID: "uid"}},
+					{User: &discordgo.User{ID: "uid2"}},
+				},
+			}
+			assert.Nil(t, state.SetGuild(guild))
+		}
+		for _, gid := range negids {
+			guild := &discordgo.Guild{
+				ID: gid,
+				Members: []*discordgo.Member{
+					{User: &discordgo.User{ID: "uid1"}},
+					{User: &discordgo.User{ID: "uid2"}},
+				},
+			}
+			assert.Nil(t, state.SetGuild(guild))
+		}
+
+		obtGids, err := state.UserGuilds("uid", true)
+		assert.Nil(t, err)
+		assert.ElementsMatch(t, obtGids, gids)
+	}
+}
+
+func TestAddUserGuilds(t *testing.T) {
+	state, _ := obtainInstance()
+	gids := []string{"1", "2", "3"}
+	assert.Nil(t, state.setUserGuilds("uid", gids))
+
+	assert.Nil(t,
+		state.AddUserGuilds("uid", "4"))
+
+	obtGids, err := state.UserGuilds("uid")
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, append(gids, "4"), obtGids)
+
+	assert.Nil(t,
+		state.AddUserGuilds("uid", "4", "5", "6"))
+
+	obtGids, err = state.UserGuilds("uid")
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, append(gids, "4", "5", "6"), obtGids)
+}
+
+func TestRemoveUserGuilds(t *testing.T) {
+	state, _ := obtainInstance()
+	gids := []string{"1", "2", "3"}
+	assert.Nil(t, state.setUserGuilds("uid", gids))
+
+	assert.Nil(t,
+		state.RemoveUserGuilds("uid", "3"))
+
+	obtGids, err := state.UserGuilds("uid")
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, gids[:2], obtGids)
+
+	assert.Nil(t,
+		state.RemoveUserGuilds("uid", "6", "2", "1"))
+
+	obtGids, err = state.UserGuilds("uid")
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, gids[0:0], obtGids)
+}

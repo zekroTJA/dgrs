@@ -5,12 +5,12 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/dgrs"
 )
 
@@ -89,17 +89,36 @@ func main() {
 
 	session.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
 		log.Printf("Logged in as %s", e.User.String())
+
+		logrus.WithField("n", len(e.Guilds)).Info("READY :: caching members of guilds ...")
+		for _, g := range e.Guilds {
+			gs, _ := state.Guild(g.ID)
+			if gs != nil && gs.MemberCount > 0 {
+				membs, _ := state.Members(g.ID)
+				if len(membs) >= gs.MemberCount {
+					logrus.WithField("gid", g.ID).Info("READY :: skip fetching members because state is hydrated")
+					continue
+				}
+			}
+
+			if _, err := state.Members(g.ID, true); err != nil {
+				logrus.WithError(err).WithField("gid", g.ID).Error("READY :: failed fetchting members")
+			} else {
+				logrus.WithField("gid", g.ID).Info("READY :: fetched members")
+			}
+		}
+		logrus.Info("READY :: caching members finished")
 	})
 
-	session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) {
-		if e.Author.Bot {
-			return
-		}
+	// session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) {
+	// 	if e.Author.Bot {
+	// 		return
+	// 	}
 
-		if cmd, ok := cmds[strings.ToLower(e.Content)]; ok {
-			cmd(s, e, state)
-		}
-	})
+	// 	if cmd, ok := cmds[strings.ToLower(e.Content)]; ok {
+	// 		cmd(s, e, state)
+	// 	}
+	// })
 
 	err = session.Open()
 	if err != nil {

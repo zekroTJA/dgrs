@@ -20,8 +20,6 @@ func (s *State) SetMember(guildID string, member *discordgo.Member) (err error) 
 		return
 	}
 
-	err = s.AddUserGuilds(member.User.ID, guildID)
-
 	return
 }
 
@@ -82,8 +80,5 @@ func (s *State) Members(guildID string, forceFetch ...bool) (v []*discordgo.Memb
 // RemoveMember removes a member object from the cache by
 // the given guild and member ID.
 func (s *State) RemoveMember(guildID, memberID string) (err error) {
-	if err = s.del(s.joinKeys(KeyMember, guildID, memberID)); err != nil {
-		return
-	}
-	return s.RemoveUserGuilds(memberID, guildID)
+	return s.del(s.joinKeys(KeyMember, guildID, memberID))
 }

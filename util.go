@@ -69,16 +69,3 @@ func (s *State) getLifetime(v interface{}) (d time.Duration) {
 func optBool(v []bool) bool {
 	return v != nil && len(v) != 0 && v[0]
 }
-
-func stringSliceIndex(s []string, v string) (i int) {
-	for ; i < len(s); i++ {
-		if s[i] == v {
-			return
-		}
-	}
-	return -1
-}
-
-func stringSliceContains(s []string, v string) bool {
-	return stringSliceIndex(s, v) != -1
-}

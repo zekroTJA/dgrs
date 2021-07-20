@@ -146,32 +146,6 @@ func TestOptBool(t *testing.T) {
 	assert.True(t, optBool([]bool{true, true}))
 }
 
-func TestStringSliceIndex(t *testing.T) {
-	s := []string{"a", "b", "c", ""}
-	assert.Equal(t, 0, stringSliceIndex(s, "a"))
-	assert.Equal(t, 1, stringSliceIndex(s, "b"))
-	assert.Equal(t, 2, stringSliceIndex(s, "c"))
-	assert.Equal(t, 3, stringSliceIndex(s, ""))
-	assert.Equal(t, -1, stringSliceIndex(s, "d"))
-
-	s = []string{}
-	assert.Equal(t, -1, stringSliceIndex(s, "a"))
-	assert.Equal(t, -1, stringSliceIndex(s, ""))
-}
-
-func TestStringsSliceContains(t *testing.T) {
-	s := []string{"a", "b", "c", ""}
-	assert.True(t, stringSliceContains(s, "a"))
-	assert.True(t, stringSliceContains(s, "b"))
-	assert.True(t, stringSliceContains(s, "c"))
-	assert.True(t, stringSliceContains(s, ""))
-	assert.False(t, stringSliceContains(s, "d"))
-
-	s = []string{}
-	assert.False(t, stringSliceContains(s, "a"))
-	assert.False(t, stringSliceContains(s, ""))
-}
-
 // ---- HELPERS ----
 
 func testLifetimes(t *testing.T, s *State, expLts Lifetimes) {

@@ -2,7 +2,6 @@ package dgrs
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -273,7 +272,6 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 			})
 		}
 		err = s.SetMessage(msg)
-		fmt.Println("msg set", msg.Reactions)
 
 	case *discordgo.MessageReactionRemove:
 		s.mtxMsgReactions.Lock()

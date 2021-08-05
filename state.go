@@ -3,6 +3,7 @@ package dgrs
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -92,6 +93,8 @@ type State struct {
 	client  redis.Cmdable
 	session DiscordSession
 	options *Options
+
+	mtxMsgReactions sync.Mutex
 }
 
 // New returns a new State instance with the passed
@@ -245,6 +248,74 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 				return
 			}
 		}
+
+	case *discordgo.MessageReactionAdd:
+		s.mtxMsgReactions.Lock()
+		defer s.mtxMsgReactions.Unlock()
+		var msg *discordgo.Message
+		msg, err = s.Message(e.ChannelID, e.MessageID)
+		if err != nil {
+			return
+		}
+		var found bool
+		for _, r := range msg.Reactions {
+			if r.Emoji.ID == e.Emoji.ID {
+				r.Count++
+				found = true
+				break
+			}
+		}
+		if !found {
+			msg.Reactions = append(msg.Reactions, &discordgo.MessageReactions{
+				Count: 1,
+				Emoji: &e.Emoji,
+			})
+		}
+		err = s.SetMessage(msg)
+
+	case *discordgo.MessageReactionRemove:
+		s.mtxMsgReactions.Lock()
+		defer s.mtxMsgReactions.Unlock()
+		var msg *discordgo.Message
+		msg, err = s.Message(e.ChannelID, e.MessageID)
+		if err != nil {
+			return
+		}
+		var isZero bool
+		for _, r := range msg.Reactions {
+			if r.Emoji.ID == e.Emoji.ID {
+				r.Count--
+				isZero = r.Count == 0
+				break
+			}
+		}
+		if isZero {
+			newReactions := make([]*discordgo.MessageReactions, 0, len(msg.Reactions)-1)
+			for _, r := range msg.Reactions {
+				if r.Emoji.ID != e.Emoji.ID {
+					newReactions = append(newReactions, r)
+				}
+			}
+			msg.Reactions = newReactions
+		}
+		err = s.SetMessage(msg)
+
+	case *discordgo.MessageReactionRemoveAll:
+		s.mtxMsgReactions.Lock()
+		defer s.mtxMsgReactions.Unlock()
+		var msg *discordgo.Message
+		msg, err = s.Message(e.ChannelID, e.MessageID)
+		if err != nil {
+			return
+		}
+		newReactions := make([]*discordgo.MessageReactions, 0, len(msg.Reactions)-1)
+		for _, r := range msg.Reactions {
+			if r.Emoji.ID != e.Emoji.ID {
+				newReactions = append(newReactions, r)
+			}
+		}
+		msg.Reactions = newReactions
+		err = s.SetMessage(msg)
 
 	case *discordgo.VoiceStateUpdate:
 		if e.ChannelID == "" {

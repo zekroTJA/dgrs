@@ -2,6 +2,7 @@ package dgrs
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -259,7 +260,7 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		}
 		var found bool
 		for _, r := range msg.Reactions {
-			if r.Emoji.ID == e.Emoji.ID {
+			if r.Emoji.ID == e.Emoji.ID && r.Emoji.Name == e.Emoji.Name {
 				r.Count++
 				found = true
 				break
@@ -272,6 +273,7 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 			})
 		}
 		err = s.SetMessage(msg)
+		fmt.Println("msg set", msg.Reactions)
 
 	case *discordgo.MessageReactionRemove:
 		s.mtxMsgReactions.Lock()
@@ -283,7 +285,7 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		}
 		var isZero bool
 		for _, r := range msg.Reactions {
-			if r.Emoji.ID == e.Emoji.ID {
+			if r.Emoji.ID == e.Emoji.ID && r.Emoji.Name == e.Emoji.Name {
 				r.Count--
 				isZero = r.Count == 0
 				break
@@ -292,7 +294,7 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		if isZero {
 			newReactions := make([]*discordgo.MessageReactions, 0, len(msg.Reactions)-1)
 			for _, r := range msg.Reactions {
-				if r.Emoji.ID != e.Emoji.ID {
+				if r.Emoji.ID != e.Emoji.ID || r.Emoji.Name != e.Emoji.Name {
 					newReactions = append(newReactions, r)
 				}
 			}
@@ -308,10 +310,15 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		if err != nil {
 			return
 		}
+		if len(msg.Reactions) == 0 {
+			return
+		}
 		newReactions := make([]*discordgo.MessageReactions, 0, len(msg.Reactions)-1)
-		for _, r := range msg.Reactions {
-			if r.Emoji.ID != e.Emoji.ID {
-				newReactions = append(newReactions, r)
+		if e.Emoji.Name != "" || e.Emoji.ID != "" {
+			for _, r := range msg.Reactions {
+				if r.Emoji.ID != e.Emoji.ID || r.Emoji.Name != e.Emoji.Name {
+					newReactions = append(newReactions, r)
+				}
 			}
 		}
 		msg.Reactions = newReactions

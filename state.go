@@ -104,8 +104,6 @@ type State struct {
 func New(opts Options) (s *State, err error) {
 	s = &State{}
 
-	s.stopHeartbeat = func() {}
-
 	s.session = opts.DiscordSession
 
 	if opts.FetchAndStore && s.session == nil {

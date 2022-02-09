@@ -8,4 +8,5 @@ var (
 	ErrInvalidType            = errors.New("invalid object type")
 	ErrSessionNotProvided     = errors.New("when FetchAndStore is enabled, a discordgo session instance must be provided")
 	ErrShardIDAlreadyReserved = errors.New("a shard with this ID is already reserved")
+	ErrShardAlreadyAllocated  = errors.New("this instance already has a shard reserved")
 )

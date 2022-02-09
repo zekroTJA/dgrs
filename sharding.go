@@ -14,26 +14,6 @@ type Shard struct {
 	LastHeartbeat time.Time `json:"lastheartbeat"`
 }
 
-func (s *State) sendHearbeat(id int) {
-	s.set(s.joinKeys(shardIdKey, strconv.Itoa(id)),
-		Shard{
-			ID:            id,
-			LastHeartbeat: time.Now(),
-		},
-		shardIdLifetime)
-}
-
-func (s *State) startHeartbeat(id int) func() {
-	ticker := time.NewTicker(45 * time.Second)
-	go func() {
-		s.sendHearbeat(id)
-		for range ticker.C {
-			s.sendHearbeat(id)
-		}
-	}()
-	return ticker.Stop
-}
-
 func (s *State) Shards() (shards []*Shard, err error) {
 	shards = make([]*Shard, 0)
 	err = s.list(s.joinKeys(shardIdKey, "*"), &shards)
@@ -41,6 +21,10 @@ func (s *State) Shards() (shards []*Shard, err error) {
 }
 
 func (s *State) ReserveShard(cid ...int) (id int, err error) {
+	if s.stopHeartbeat != nil {
+		err = ErrShardAlreadyAllocated
+		return
+	}
 	shards, err := s.Shards()
 	if err != nil {
 		return
@@ -63,6 +47,34 @@ func (s *State) ReserveShard(cid ...int) (id int, err error) {
 	}
 	s.stopHeartbeat = s.startHeartbeat(id)
 	return
+}
+
+func (s *State) ReleaseShard(id int) (err error) {
+	if s.stopHeartbeat != nil {
+		s.stopHeartbeat()
+	}
+	err = s.del(s.joinKeys(shardIdKey, strconv.Itoa(id)))
+	return
+}
+
+func (s *State) sendHearbeat(id int) {
+	s.set(s.joinKeys(shardIdKey, strconv.Itoa(id)),
+		Shard{
+			ID:            id,
+			LastHeartbeat: time.Now(),
+		},
+		shardIdLifetime)
+}
+
+func (s *State) startHeartbeat(id int) func() {
+	ticker := time.NewTicker(45 * time.Second)
+	go func() {
+		s.sendHearbeat(id)
+		for range ticker.C {
+			s.sendHearbeat(id)
+		}
+	}()
+	return ticker.Stop
 }
 
 func containsShard(shards []*Shard, id int) bool {

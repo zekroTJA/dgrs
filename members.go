@@ -50,6 +50,14 @@ func (s *State) Member(guildID, memberID string, forceNoFetch ...bool) (v *disco
 // Members returns a list of members of the given guild ID
 // which are stored in the cache at the given moment.
 func (s *State) Members(guildID string, forceFetch ...bool) (v []*discordgo.Member, err error) {
+	return s.MembersLimit(guildID, "", 0, forceFetch...)
+}
+
+// MembersLimit returns a list of members of the given guild ID
+// which are stored in the cache at the given moment beginning from
+// the given user ID (or first if empty) and limited by the given
+// limit amount (or all if <= 0).
+func (s *State) MembersLimit(guildID, afterID string, limit int, forceFetch ...bool) (v []*discordgo.Member, err error) {
 	v = make([]*discordgo.Member, 0)
 	if err = s.list(s.joinKeys(KeyMember, guildID, "*"), &v); err != nil {
 		return

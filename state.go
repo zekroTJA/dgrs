@@ -94,6 +94,8 @@ type State struct {
 	session DiscordSession
 	options *Options
 
+	stopHeartbeat func()
+
 	mtxMsgReactions sync.Mutex
 }
 
@@ -101,6 +103,8 @@ type State struct {
 // options.
 func New(opts Options) (s *State, err error) {
 	s = &State{}
+
+	s.stopHeartbeat = func() {}
 
 	s.session = opts.DiscordSession
 
@@ -156,6 +160,8 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 	switch e := (_e).(type) {
 
 	case *discordgo.Ready:
+		s.stopHeartbeat()
+		s.stopHeartbeat = s.startHeartbeat()
 		for _, g := range e.Guilds {
 			if g.Unavailable {
 				if _, err = s.Guild(g.ID); err != nil {
@@ -168,6 +174,13 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 		if err = s.SetSelfUser(e.User); err != nil {
 			return
 		}
+
+	case *discordgo.Disconnect:
+		s.stopHeartbeat()
+
+	case *discordgo.Resumed:
+		s.stopHeartbeat()
+		s.stopHeartbeat = s.startHeartbeat()
 
 	case *discordgo.GuildCreate:
 		if err = s.SetGuild(e.Guild); err != nil {

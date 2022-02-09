@@ -1,7 +1,6 @@
 package dgrs
 
 import (
-	"math/rand"
 	"strconv"
 	"time"
 )
@@ -11,16 +10,12 @@ const shardIdLifetime = 1 * time.Minute
 const shartHearbeatInterval = 45 * time.Second
 
 type Shard struct {
-	ID            string    `json:"id"`
+	ID            int       `json:"id"`
 	LastHeartbeat time.Time `json:"lastheartbeat"`
 }
 
-func getRandomID() string {
-	return strconv.Itoa(rand.Intn(999_999))
-}
-
-func (s *State) sendHearbeat(id string) {
-	s.set(s.joinKeys(shardIdKey, id),
+func (s *State) sendHearbeat(id int) {
+	s.set(s.joinKeys(shardIdKey, strconv.Itoa(id)),
 		Shard{
 			ID:            id,
 			LastHeartbeat: time.Now(),
@@ -28,8 +23,7 @@ func (s *State) sendHearbeat(id string) {
 		shardIdLifetime)
 }
 
-func (s *State) startHeartbeat() func() {
-	id := getRandomID()
+func (s *State) startHeartbeat(id int) func() {
 	ticker := time.NewTicker(45 * time.Second)
 	go func() {
 		s.sendHearbeat(id)
@@ -43,5 +37,15 @@ func (s *State) startHeartbeat() func() {
 func (s *State) Shards() (shards []*Shard, err error) {
 	shards = make([]*Shard, 0)
 	err = s.list(s.joinKeys(shardIdKey, "*"), &shards)
+	return
+}
+
+func (s *State) ReserveShard() (id int, err error) {
+	shards, err := s.Shards()
+	if err != nil {
+		return
+	}
+	id = len(shards)
+	s.stopHeartbeat = s.startHeartbeat(id)
 	return
 }

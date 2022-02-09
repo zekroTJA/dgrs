@@ -10,14 +10,14 @@ import (
 func TestShards(t *testing.T) {
 	state, _ := obtainInstance()
 
-	t1 := state.startHeartbeat()
+	t1 := state.startHeartbeat(1)
 
 	time.Sleep(100 * time.Millisecond)
 	shards, err := state.Shards()
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(shards))
 
-	t2 := state.startHeartbeat()
+	t2 := state.startHeartbeat(2)
 	defer t2()
 
 	time.Sleep(100 * time.Millisecond)

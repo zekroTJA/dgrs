@@ -7,6 +7,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestReserveShard(t *testing.T) {
+	state, _ := obtainInstance()
+
+	id, err := state.ReserveShard()
+	assert.Nil(t, err)
+	assert.Equal(t, 0, id)
+
+	time.Sleep(10 * time.Millisecond)
+
+	id, err = state.ReserveShard()
+	assert.Nil(t, err)
+	assert.Equal(t, 1, id)
+
+	time.Sleep(10 * time.Millisecond)
+
+	_, err = state.ReserveShard(1)
+	assert.ErrorIs(t, err, ErrShardIDAlreadyReserved)
+}
+
 func TestShards(t *testing.T) {
 	state, _ := obtainInstance()
 

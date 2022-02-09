@@ -40,12 +40,36 @@ func (s *State) Shards() (shards []*Shard, err error) {
 	return
 }
 
-func (s *State) ReserveShard() (id int, err error) {
+func (s *State) ReserveShard(cid ...int) (id int, err error) {
 	shards, err := s.Shards()
 	if err != nil {
 		return
 	}
-	id = len(shards)
+	if len(cid) != 0 {
+		// Take the passed shard as ID if not
+		// already reserved.
+		id = cid[0]
+		if containsShard(shards, id) {
+			err = ErrShardIDAlreadyReserved
+			return
+		}
+	} else {
+		// Take the next free shard ID.
+		for i := 0; i < len(shards)+1; i++ {
+			if !containsShard(shards, i) {
+				id = i
+			}
+		}
+	}
 	s.stopHeartbeat = s.startHeartbeat(id)
 	return
+}
+
+func containsShard(shards []*Shard, id int) bool {
+	for _, s := range shards {
+		if s.ID == id {
+			return true
+		}
+	}
+	return false
 }

@@ -67,5 +67,12 @@ func (s *State) getLifetime(v interface{}) (d time.Duration) {
 }
 
 func optBool(v []bool) bool {
-	return v != nil && len(v) != 0 && v[0]
+	return len(v) != 0 && v[0]
+}
+
+func optInt(v []int) (i int) {
+	if len(v) != 0 {
+		i = v[0]
+	}
+	return
 }

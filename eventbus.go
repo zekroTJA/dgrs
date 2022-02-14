@@ -36,7 +36,7 @@ func (s *State) Subscribe(
 	go func() {
 		for msg := range ch {
 			go handler(func(v interface{}) error {
-				return s.options.UnmarshalFunc([]byte(msg.String()), v)
+				return s.options.UnmarshalFunc([]byte(msg.Payload), v)
 			})
 		}
 	}()

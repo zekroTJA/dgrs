@@ -17,7 +17,7 @@ type UnmarshalFunc func([]byte, interface{}) error
 type Options struct {
 	// You can pass a pre-initialized redis instance
 	// if you already have one.
-	RedisClient redis.Cmdable
+	RedisClient *redis.Client
 
 	// Discord session used to fetch unpresent data
 	// and to hook event handlers into.
@@ -90,7 +90,7 @@ type Lifetimes struct {
 // session, it is also possible to maintain the current state
 // automatically.
 type State struct {
-	client  redis.Cmdable
+	client  *redis.Client
 	session DiscordSession
 	options *Options
 

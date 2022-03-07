@@ -132,19 +132,22 @@ func TestRemoveChannel(t *testing.T) {
 
 		msgs := []*discordgo.Message{
 			{
-				ID:        "msgid1",
-				ChannelID: c.ID,
-				Content:   "test",
+				ID:         "msgid1",
+				ChannelID:  c.ID,
+				Content:    "test",
+				Components: []discordgo.MessageComponent{},
 			},
 			{
-				ID:        "msgid2",
-				ChannelID: c.ID,
-				Content:   "test",
+				ID:         "msgid2",
+				ChannelID:  c.ID,
+				Content:    "test",
+				Components: []discordgo.MessageComponent{},
 			},
 			{
-				ID:        "msgid3",
-				ChannelID: c.ID,
-				Content:   "test",
+				ID:         "msgid3",
+				ChannelID:  c.ID,
+				Content:    "test",
+				Components: []discordgo.MessageComponent{},
 			},
 		}
 

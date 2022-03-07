@@ -33,6 +33,7 @@ func testMessage(id ...string) *discordgo.Message {
 			GuildID: "guildid",
 			User:    user,
 		},
+		Components: []discordgo.MessageComponent{},
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -41,13 +42,13 @@ func TestSubscribe(t *testing.T) {
 	}
 
 	pl := payload{"data"}
+	var rec payload
+	defer assert.Equal(t, &pl, &rec)
 
 	cl := state.Subscribe(
 		chKey,
 		func(scan func(v interface{}) error) {
-			var rec payload
 			assert.Nil(t, scan(&rec))
-			assert.Equal(t, pl, rec)
 		})
 	defer cl()
 
@@ -55,7 +56,9 @@ func TestSubscribe(t *testing.T) {
 	assert.Nil(t, err)
 	err = state.client.Publish(
 		context.Background(),
-		chKey,
+		state.joinChanKeys(chKey),
 		data).Err()
 	assert.Nil(t, err)
+
+	time.Sleep(1 * time.Second)
 }

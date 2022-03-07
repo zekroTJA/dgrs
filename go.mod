@@ -6,7 +6,6 @@ require (
 	github.com/bwmarrin/discordgo v0.23.3-0.20211228023845-29269347e820
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-redis/redis/v8 v8.10.0
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/joho/godotenv v1.3.0
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/stretchr/objx v0.1.1 // indirect

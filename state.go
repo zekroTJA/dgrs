@@ -67,6 +67,10 @@ type Options struct {
 
 	// The heartbeat duration for shards.
 	ShardTimeout time.Duration
+
+	// Set to true to broadcast DM events via
+	// the eventbus.
+	BroadcastDMs bool
 }
 
 // Lifetimes wrap a grid of lifetime specifications
@@ -246,8 +250,10 @@ func (s *State) onEvent(_ *discordgo.Session, _e interface{}) (err error) {
 
 	case *discordgo.MessageCreate:
 		err = s.SetMessage(e.Message)
+		s.publishDM(e.Message, false)
 	case *discordgo.MessageUpdate:
 		err = s.SetMessage(e.Message)
+		s.publishDM(e.Message, true)
 	case *discordgo.MessageDelete:
 		err = s.RemoveMessage(e.ChannelID, e.Message.ID)
 	case *discordgo.MessageDeleteBulk:

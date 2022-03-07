@@ -20,6 +20,7 @@ func testChannel(id ...string) *discordgo.Channel {
 		ID:      gid,
 		Name:    "channame",
 		GuildID: "guildid",
+		Type:    discordgo.ChannelTypeGuildText,
 	}
 }
 

@@ -466,11 +466,13 @@ func obtainHookesInstance() (
 		}).
 		Return(func() {})
 
-	state, _ = New(Options{
+	opts := Options{
 		FetchAndStore:  false,
 		DiscordSession: session,
 		KeyPrefix:      fmt.Sprintf("dgrctest%d", rand.Int()),
-	})
+	}
+
+	state, _ = New(opts)
 	return
 }
 

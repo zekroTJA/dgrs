@@ -3,7 +3,7 @@ module github.com/zekrotja/dgrs
 go 1.16
 
 require (
-	github.com/bwmarrin/discordgo v0.23.3-0.20211228023845-29269347e820
+	github.com/bwmarrin/discordgo v0.24.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/joho/godotenv v1.3.0

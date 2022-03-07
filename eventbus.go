@@ -1,6 +1,18 @@
 package dgrs
 
-import "context"
+import (
+	"context"
+
+	"github.com/bwmarrin/discordgo"
+)
+
+const dmBcChannel = "internal-dm-broadcasts"
+
+type DirectMessageEvent struct {
+	Message  *discordgo.Message `json:"message"`
+	Channel  *discordgo.Channel `json:"channel"`
+	IsUpdate bool               `json:"is_update"`
+}
 
 // Publish pushes an event payload to the given
 // channel to all subscribers connected to the
@@ -41,6 +53,32 @@ func (s *State) Subscribe(
 		}
 	}()
 	return
+}
+
+// SubscribeDMs subscribes to the states DM event bus
+// and executes handler on each received DM event with the
+// event details passed as payload.
+func (s *State) SubscribeDMs(handler func(e *DirectMessageEvent)) (close func() error) {
+	return s.Subscribe(dmBcChannel, func(scan func(v interface{}) error) {
+		var dm DirectMessageEvent
+		if err := scan(&dm); err == nil {
+			handler(&dm)
+		}
+	})
+}
+
+func (s *State) publishDM(msg *discordgo.Message, isUpdate bool) {
+	if !s.options.BroadcastDMs {
+		return
+	}
+	ch, err := s.Channel(msg.ChannelID)
+	if err != nil || ch == nil {
+		return
+	}
+	if ch.Type != discordgo.ChannelTypeDM && ch.Type != discordgo.ChannelTypeGroupDM {
+		return
+	}
+	s.Publish(dmBcChannel, DirectMessageEvent{msg, ch, isUpdate})
 }
 
 func (s *State) joinChanKeys(channel string) string {

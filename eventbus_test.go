@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -60,5 +61,54 @@ func TestSubscribe(t *testing.T) {
 		data).Err()
 	assert.Nil(t, err)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Millisecond)
+}
+
+func TestSubscribeDMs(t *testing.T) {
+	var err error
+	state, _, handle := obtainHookesInstance()
+
+	chDm := testChannel("dm-id")
+	chDm.Type = discordgo.ChannelTypeDM
+	err = state.SetChannel(chDm)
+	assert.Nil(t, err)
+	chNoDm := testChannel("no-dm-id")
+	err = state.SetChannel(chNoDm)
+	assert.Nil(t, err)
+
+	dm := testMessage("msg-id")
+	dm.ChannelID = chDm.ID
+
+	var rec *DirectMessageEvent
+	cl := state.SubscribeDMs(func(e *DirectMessageEvent) {
+		rec = e
+	})
+	defer cl()
+
+	rec = nil
+	handle(ds, &discordgo.MessageCreate{dm})
+	time.Sleep(100 * time.Millisecond)
+	assert.Nil(t, rec)
+
+	state.options.BroadcastDMs = true
+
+	rec = nil
+	handle(ds, &discordgo.MessageCreate{dm})
+	time.Sleep(100 * time.Millisecond)
+	assert.Equal(t, dm, rec.Message)
+	assert.Equal(t, chDm, rec.Channel)
+	assert.False(t, rec.IsUpdate)
+
+	rec = nil
+	handle(ds, &discordgo.MessageUpdate{dm, nil})
+	time.Sleep(100 * time.Millisecond)
+	assert.Equal(t, dm, rec.Message)
+	assert.Equal(t, chDm, rec.Channel)
+	assert.True(t, rec.IsUpdate)
+
+	rec = nil
+	dm.ChannelID = chNoDm.ID
+	handle(ds, &discordgo.MessageCreate{dm})
+	time.Sleep(100 * time.Millisecond)
+	assert.Nil(t, rec)
 }

@@ -9,6 +9,7 @@ import (
 
 func TestReserveShard(t *testing.T) {
 	state, _ := obtainInstance()
+	state.options.ShardTimeout = 10 * time.Second
 
 	id, err := state.ReserveShard(0)
 	assert.Nil(t, err)
@@ -39,6 +40,7 @@ func TestReserveShard(t *testing.T) {
 
 func TestShards(t *testing.T) {
 	state, _ := obtainInstance()
+	state.options.ShardTimeout = 10 * time.Second
 
 	t1 := state.startHeartbeat(0, 1)
 
@@ -56,7 +58,7 @@ func TestShards(t *testing.T) {
 	assert.Equal(t, 2, len(shards))
 
 	t1()
-	time.Sleep(1*time.Minute + 10*time.Second)
+	time.Sleep(state.options.ShardTimeout + 5*time.Second)
 
 	shards, err = state.Shards(0)
 	assert.Nil(t, err)

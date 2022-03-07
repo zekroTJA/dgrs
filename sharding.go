@@ -6,8 +6,6 @@ import (
 )
 
 const shardIdKey = "meta:shardid"
-const shardIdLifetime = 1 * time.Minute
-const shartHearbeatInterval = 45 * time.Second
 
 type Shard struct {
 	ID            int       `json:"id"`
@@ -65,17 +63,23 @@ func (s *State) sendHearbeat(pool, id int) {
 			ID:            id,
 			LastHeartbeat: time.Now(),
 		},
-		shardIdLifetime)
+		s.options.ShardTimeout)
 }
 
 func (s *State) startHeartbeat(pool, id int) func() {
-	ticker := time.NewTicker(45 * time.Second)
+	d := s.options.ShardTimeout / 4 * 3
+	if s.options.ShardTimeout-d > 15*time.Second {
+		d = s.options.ShardTimeout - 15*time.Second
+	}
+
+	ticker := time.NewTicker(d)
 	go func() {
 		s.sendHearbeat(pool, id)
 		for range ticker.C {
 			s.sendHearbeat(pool, id)
 		}
 	}()
+
 	return ticker.Stop
 }
 

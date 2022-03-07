@@ -64,6 +64,9 @@ type Options struct {
 	//
 	// Defaults to json.Unmarshal.
 	UnmarshalFunc UnmarshalFunc
+
+	// The heartbeat duration for shards.
+	ShardTimeout time.Duration
 }
 
 // Lifetimes wrap a grid of lifetime specifications
@@ -126,6 +129,9 @@ func New(opts Options) (s *State, err error) {
 	}
 	if opts.MarshalFunc == nil {
 		opts.MarshalFunc = json.Marshal
+	}
+	if opts.ShardTimeout == 0 {
+		opts.ShardTimeout = time.Minute
 	}
 
 	s.options = &opts

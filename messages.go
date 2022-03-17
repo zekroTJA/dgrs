@@ -4,13 +4,12 @@ import "github.com/bwmarrin/discordgo"
 
 // SetMessage sets the given message object to the cache.
 func (s *State) SetMessage(message *discordgo.Message) (err error) {
-	err = s.set(s.joinKeys(KeyMessage, message.ChannelID, message.ID), message, s.getLifetime(message))
-	if err != nil {
-		return
-	}
-
-	if message.Member != nil && message.Author != nil {
-		message.Member.User = message.Author
+	if message.Member != nil {
+		if message.Member.User == nil && message.Author != nil {
+			message.Member.User = message.Author
+		} else if message.Author == nil && message.Member.User != nil {
+			message.Author = message.Member.User
+		}
 		if err = s.SetMember(message.GuildID, message.Member); err != nil {
 			return
 		}
@@ -18,6 +17,11 @@ func (s *State) SetMessage(message *discordgo.Message) (err error) {
 		if err = s.SetUser(message.Author); err != nil {
 			return
 		}
+	}
+
+	err = s.set(s.joinKeys(KeyMessage, message.ChannelID, message.ID), message, s.getLifetime(message))
+	if err != nil {
+		return
 	}
 
 	return

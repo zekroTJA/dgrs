@@ -74,6 +74,48 @@ func TestSetMessage(t *testing.T) {
 		assert.Nil(t, res.Err())
 		assert.Equal(t, mustMarshal(message.Author), res.Val())
 	}
+
+	{
+		state, _ := obtainInstance()
+
+		message := testMessage()
+		message.Author = nil
+		err := state.SetMessage(message)
+		assert.Nil(t, err)
+
+		res := state.client.Get(context.Background(), state.joinKeys(KeyMessage, "chanid", "id"))
+		assert.Nil(t, res.Err())
+		assert.Equal(t, mustMarshal(message), res.Val())
+
+		res = state.client.Get(context.Background(), state.joinKeys(KeyUser, "userid"))
+		assert.Nil(t, res.Err())
+		assert.Equal(t, mustMarshal(message.Author), res.Val())
+
+		res = state.client.Get(context.Background(), state.joinKeys(KeyMember, "guildid", "userid"))
+		assert.Nil(t, res.Err())
+		assert.Equal(t, mustMarshal(message.Member), res.Val())
+	}
+
+	{
+		state, _ := obtainInstance()
+
+		message := testMessage()
+		message.Member.User = nil
+		err := state.SetMessage(message)
+		assert.Nil(t, err)
+
+		res := state.client.Get(context.Background(), state.joinKeys(KeyMessage, "chanid", "id"))
+		assert.Nil(t, res.Err())
+		assert.Equal(t, mustMarshal(message), res.Val())
+
+		res = state.client.Get(context.Background(), state.joinKeys(KeyUser, "userid"))
+		assert.Nil(t, res.Err())
+		assert.Equal(t, mustMarshal(message.Author), res.Val())
+
+		res = state.client.Get(context.Background(), state.joinKeys(KeyMember, "guildid", "userid"))
+		assert.Nil(t, res.Err())
+		assert.Equal(t, mustMarshal(message.Member), res.Val())
+	}
 }
 
 func TestMessage(t *testing.T) {

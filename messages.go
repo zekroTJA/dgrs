@@ -37,6 +37,7 @@ func (s *State) SetMessage(message *discordgo.Message) (err error) {
 // is disabled, nil is returned.
 func (s *State) Message(channelID, messageID string) (v *discordgo.Message, err error) {
 	v = &discordgo.Message{}
+
 	ok, err := s.get(s.joinKeys(KeyMessage, channelID, messageID), v)
 	if !ok {
 		if s.options.FetchAndStore {
@@ -47,6 +48,16 @@ func (s *State) Message(channelID, messageID string) (v *discordgo.Message, err 
 			v = nil
 		}
 	}
+	if err != nil || v == nil {
+		return
+	}
+
+	if v.Author == nil && v.Member != nil && v.Member.User != nil {
+		v.Author = v.Member.User
+	} else if v.Member != nil && v.Member.User == nil && v.Author != nil {
+		v.Member.User = v.Author
+	}
+
 	return
 }
 

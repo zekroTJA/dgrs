@@ -106,6 +106,8 @@ type State struct {
 	mtxMsgReactions sync.Mutex
 }
 
+var _ IState = (*State)(nil)
+
 // New returns a new State instance with the passed
 // options.
 func New(opts Options) (s *State, err error) {

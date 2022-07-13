@@ -11,11 +11,14 @@ import (
 // the cache.
 func (s *State) SetGuild(guild *discordgo.Guild) (err error) {
 	if guild.MemberCount == 0 {
-		g, err := s.Guild(guild.ID)
+		g := &discordgo.Guild{}
+		ok, err := s.get(s.joinKeys(KeyGuild, guild.ID), g)
 		if err != nil {
 			return err
 		}
-		guild.MemberCount = g.MemberCount
+		if ok {
+			guild.MemberCount = g.MemberCount
+		}
 	}
 
 	err = s.set(s.joinKeys(KeyGuild, guild.ID), guild, s.getLifetime(guild))

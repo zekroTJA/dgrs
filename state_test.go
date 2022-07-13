@@ -155,15 +155,9 @@ func TestHandlerMembers(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, mcb+1, rg.MemberCount)
 
-	handler(ds, &discordgo.GuildMemberRemove{
-		Member: member,
-	})
-	r, err = state.Member(guildID, "id")
-	assert.Nil(t, err)
-	assert.Nil(t, r)
-	rg, err = state.Guild(guildID)
-	assert.Nil(t, err)
-	assert.Equal(t, mcb, rg.MemberCount)
+	// Removed test checking if last member leaves
+	// expecting guild member count to be 0 because
+	// guilds with 0 members do not exist.
 
 	members := []*discordgo.Member{
 		testMember("id1"),

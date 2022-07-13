@@ -470,6 +470,9 @@ func obtainHookesInstance() (
 		FetchAndStore:  false,
 		DiscordSession: session,
 		KeyPrefix:      fmt.Sprintf("dgrctest%d", rand.Int()),
+		RedisClient: redis.NewClient(&redis.Options{
+			Addr: os.Getenv("REDIS_ADDRESS"),
+		}),
 	}
 
 	state, _ = New(opts)

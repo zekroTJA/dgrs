@@ -1,6 +1,8 @@
 package dgrs
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/bwmarrin/discordgo"
+)
 
 // SetGuild sets the given guild object to the cache.
 //
@@ -8,6 +10,14 @@ import "github.com/bwmarrin/discordgo"
 // or emojis, these objects are also stroed subsequently in
 // the cache.
 func (s *State) SetGuild(guild *discordgo.Guild) (err error) {
+	if guild.MemberCount == 0 {
+		g, err := s.Guild(guild.ID)
+		if err != nil {
+			return err
+		}
+		guild.MemberCount = g.MemberCount
+	}
+
 	err = s.set(s.joinKeys(KeyGuild, guild.ID), guild, s.getLifetime(guild))
 	if err != nil {
 		return

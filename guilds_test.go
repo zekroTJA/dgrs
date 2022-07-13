@@ -136,6 +136,41 @@ func TestGuild(t *testing.T) {
 	}
 }
 
+func TestGuildUpdate(t *testing.T) {
+	guild := testGuild()
+	guild.Members = make([]*discordgo.Member, 0)
+	guild.Roles = make([]*discordgo.Role, 0)
+	guild.Channels = make([]*discordgo.Channel, 0)
+	guild.Emojis = make([]*discordgo.Emoji, 0)
+	guild.MemberCount = 100
+
+	state, session := obtainInstance()
+
+	session.On("Guild", "id").Once().Return(guild, nil)
+
+	state.options.FetchAndStore = true
+	gr, err := state.Guild("id")
+	assert.Nil(t, err)
+	assert.Equal(t, guild, gr)
+
+	guild.MemberCount = 0
+	guild.Description = "A description!"
+	guild.Name = "A name!"
+	guild.Channels = []*discordgo.Channel{
+		{ID: "chan-1", Name: "chan-1"},
+		{ID: "chan-2", Name: "chan-2"},
+		{ID: "chan-3", Name: "chan-3"},
+	}
+
+	err = state.SetGuild(guild)
+	assert.Nil(t, err)
+
+	guild.MemberCount = 100
+	gr, err = state.Guild("id")
+	assert.Nil(t, err)
+	assert.Equal(t, guild, gr)
+}
+
 func TestGuilds(t *testing.T) {
 	guilds := make([]*discordgo.Guild, 10)
 	state, _ := obtainInstance()

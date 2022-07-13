@@ -26,6 +26,8 @@ func (s *State) get(key string, v interface{}) (ok bool, err error) {
 	if err == redis.Nil {
 		err = nil
 		return
+	} else if err != nil {
+		return false, err
 	}
 	ok = true
 	err = s.options.UnmarshalFunc(data, v)
